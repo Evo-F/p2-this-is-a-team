@@ -2,6 +2,8 @@
 
 Distributed website analyzer and geolocation service.
 
+Contributors: Evo Fearnley (2021)
+
 This template contains the following files:
 
 * cloud.py - Info on physical location of Amazon and Google datacenters.
