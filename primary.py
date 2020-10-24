@@ -46,6 +46,7 @@ def send_proto_message(message, target):
     s.settimeout(10)
     try:
         s.connect(addr)
+        print("Connected successfully!")
     except socket.timeout:
         print("ERROR: Attempted to open socket to target %s, but it did not respond!" % target)
         return
