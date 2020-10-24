@@ -2,6 +2,7 @@ import socket
 import socketutil
 import time
 import cloud
+import threading
 
 http_port = 80
 proto_port = 9299
@@ -42,7 +43,13 @@ def parse_url_parts(url):
 def send_proto_message(message, target):
     addr = (target, proto_port)
     s = socketutil.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.connect(addr)
+    s.settimeout(10)
+    try:
+        s.connect(addr)
+    except socket.timeout:
+        print("ERROR: Attempted to open socket to target %s, but it did not respond!" % target)
+        return
+
     s.sendall(message)
 
     response = s.recv_until("eot")
@@ -52,8 +59,13 @@ def send_proto_message(message, target):
 
 
 def handle_proto_message(sock):
-    message = sock.recv_until("eot")
-    print(message)
+    received_message = sock.recv_until("eot")
+    print("RECEIVED A NEW MESSAGE!")
+    print(received_message)
+    if received_message.startswith("okay"):
+        return
+
+    sock.sendall("okay\neot")
     sock.close()
 
 
@@ -87,13 +99,32 @@ def send_http_request(req, target, sendport):
     print("Approx. Time Elapsed (rtt): "+str(round(duration, 2)) + "ms")
 
 
-print("Test")
 self_host = cloud.gcp_get_my_external_ip()
-print("Detected IP: "+str(self_host))
+server_addr = (self_host, proto_port)
+listener = socketutil.socket(socket.AF_INET, socket.SOCK_STREAM)
+listener.bind(server_addr)
+listener.listen(proto_port)
 
-#server_addr = (self_host, proto_port)
-#listener = socketutil.socket(socket.AF_INET, socket.SOCK_STREAM)
-#listener.bind(server_addr)
+target = input("Please input the address of a known node, or press enter if this is the first in the network: ")
+
+if target is not None:
+    message = "hello\n"
+    message += "eot"
+    send_proto_message(message, target)
+
+try:
+    print("Now listening on address %s:%d" % (self_host, proto_port))
+    while True:
+        sock, client_addr = listener.accept()
+        t = threading.Thread(target=handle_proto_message, args=sock)
+        t.daemon = True
+        t.start()
+finally:
+    print("Shutting down!")
+    listener.close()
+
+
+
 
 
 
