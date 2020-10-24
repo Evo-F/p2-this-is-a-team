@@ -44,11 +44,12 @@ def send_proto_message(message, target):
     addr = (target, proto_port)
     s = socketutil.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.settimeout(10)
+    print("Attempting to send message to %s:%d" % (target, proto_port))
     try:
         s.connect(addr)
         print("Connected successfully!")
     except socket.timeout:
-        print("ERROR: Attempted to open socket to target %s, but it did not respond!" % target)
+        print("ERROR: Attempted to open socket to target %s:%d, but it did not respond!" % (target, proto_port))
         return
 
     s.sendall(message)
@@ -108,7 +109,7 @@ print("Currently hosting via: "+str(self_host))
 server_addr = ("", proto_port)
 listener = socketutil.socket(socket.AF_INET, socket.SOCK_STREAM)
 listener.bind(server_addr)
-listener.listen(proto_port)
+listener.listen()
 
 target = input("Please input the address of a known node, or press enter if this is the first in the network: ")
 
