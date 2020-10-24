@@ -316,6 +316,7 @@ try:
     city = region_cities[region]
     coords = region_coords[region]
     provider = "Amazon AWS/EC2 Cloud"
+    print("made it to the end aws")
 except:
     try:
         # If that fails, next try GCP meta-data service.
@@ -328,6 +329,7 @@ except:
         city = region_cities[region]
         coords = region_coords[region]
         provider = "Google GCP/GCE Cloud"
+        print("made it to the end gcp")
     except:
         # If that fails, give up and just accept the default values.
         pass

@@ -1,6 +1,11 @@
 import socket
 import socketutil
 import time
+import cloud
+
+http_port = 80
+proto_port = 9299
+self_host = ""
 
 
 class HTTPRequest:
@@ -34,6 +39,24 @@ def parse_url_parts(url):
     return parts
 
 
+def send_proto_message(message, target):
+    addr = (target, proto_port)
+    s = socketutil.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.connect(addr)
+    s.sendall(message)
+
+    response = s.recv_until("eot")
+    while response != "okay":
+        s.sendall(message)
+    s.close()
+
+
+def handle_proto_message(sock):
+    message = sock.recv_until("eot")
+    print(message)
+    sock.close()
+
+
 def send_http_request(req, target, sendport):
     addr = (target, sendport)
     s = socketutil.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -64,22 +87,13 @@ def send_http_request(req, target, sendport):
     print("Approx. Time Elapsed (rtt): "+str(round(duration, 2)) + "ms")
 
 
-target_url = "http://google.com/"
-url_parts = parse_url_parts(target_url)
-print(url_parts)
-print()
+print("Test")
+self_host = cloud.gcp_get_my_external_ip()
+print("Detected IP: "+str(self_host))
 
-demo = HTTPRequest()
-demo.method = "HEAD"
-demo.path = url_parts[2]
-demo.version = "HTTP/1.1"
-
-if url_parts[0] == "https":
-    port = 443
-else:
-    port = 80
-
-send_http_request(demo, url_parts[1], port)
+#server_addr = (self_host, proto_port)
+#listener = socketutil.socket(socket.AF_INET, socket.SOCK_STREAM)
+#listener.bind(server_addr)
 
 
 
