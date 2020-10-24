@@ -100,7 +100,8 @@ def send_http_request(req, target, sendport):
 
 
 self_host = cloud.gcp_get_my_external_ip()
-server_addr = (self_host, proto_port)
+print("Currently hosting via: "+str(self_host))
+server_addr = ("", proto_port)
 listener = socketutil.socket(socket.AF_INET, socket.SOCK_STREAM)
 listener.bind(server_addr)
 listener.listen(proto_port)
