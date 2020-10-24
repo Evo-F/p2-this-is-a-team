@@ -1,0 +1,37 @@
+Each request sent is multiple lines long, with the first line always being the type of request, and the last line
+always being "eot"
+Types of requests are as follows:
+
+- hello (used for registering new nodes with the existing network)
+- request (used for propagating a URL trace request from a user)
+- result (used for designating results from a previous URL trace request)
+- goodbye (used for removing nodes from the network)
+- contact (used for telling Node A to establish a connection with Node B)
+- okay (used for acknowledging certain request types)
+
+SAMPLE REQUEST BODIES:
+- hello
+- eot
+
+- request
+- [request ID]
+- [target URL]
+- [node making the request] //send results to this node!
+- eot
+
+- result
+- [request ID]
+- [RTT]
+- [yes/no] //if yes, the remaining data is a complete HTML file for analysis
+- {if yes above, HTML file goes here}
+- eot
+
+- goodbye
+- eot
+
+- contact
+- [node address]
+- eot
+
+- okay
+- eot
