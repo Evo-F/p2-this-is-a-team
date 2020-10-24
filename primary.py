@@ -79,19 +79,6 @@ def handle_http_request(sock):
     return
 
 
-self_host = cloud.gcp_get_my_external_ip()
-print("Currently hosting via: "+str(self_host))
-server_addr = ("", proto_port)
-http_addr = ("", 443)
-listener = socketutil.socket(socket.AF_INET, socket.SOCK_STREAM)
-listener.bind(server_addr)
-listener.listen()
-
-http_listener = socketutil.socket(socket.AF_INET, socket.SOCK_STREAM)
-http_listener.bind(http_addr)
-http_listener.listen()
-
-
 def listen_http():
     try:
         print("Now listening on address %s:%d (HTTP)" % (self_host, 443))
@@ -120,6 +107,19 @@ def listen_protocol():
         listener.close()
 
 
+self_host = cloud.gcp_get_my_external_ip()
+print("Currently hosting via: "+str(self_host))
+server_addr = ("", proto_port)
+http_addr = ("", 443)
+listener = socketutil.socket(socket.AF_INET, socket.SOCK_STREAM)
+listener.bind(server_addr)
+listener.listen()
+
+http_listener = socketutil.socket(socket.AF_INET, socket.SOCK_STREAM)
+http_listener.bind(http_addr)
+http_listener.listen()
+
+
 target = input("Please input the address of a known node, or press enter if this is the first in the network: ")
 
 if target != "":
@@ -127,12 +127,13 @@ if target != "":
     message += "eot"
     send_proto_message(message, target)
 
-t_http = threading.Thread(target=listen_http(), args=())
-t_http.daemon = True
-t_http.start()
+t_http = threading.Thread(target=listen_http())
+print("HTTP thread set up...")
 
-t_geoloc = threading.Thread(target=listen_protocol(), args=())
-t_geoloc.daemon = True
+t_geoloc = threading.Thread(target=listen_protocol())
+print("Geoloc thread set up...")
+
+t_http.start()
 t_geoloc.start()
 
 
