@@ -52,10 +52,13 @@ def send_proto_message(message, target):
 
     s.sendall(message)
 
-    response = s.recv_until("eot")
-    while response != "okay":
-        s.sendall(message)
-    s.close()
+    try:
+        response = s.recv_until("eot")
+        while response != "okay":
+            s.sendall(message)
+        s.close()
+    except socket.timeout:
+        print("ERROR: Other node did not send a response in time!")
 
 
 def handle_proto_message(sock):
@@ -108,7 +111,7 @@ listener.listen(proto_port)
 
 target = input("Please input the address of a known node, or press enter if this is the first in the network: ")
 
-if target is not None:
+if target != "":
     message = "hello\n"
     message += "eot"
     send_proto_message(message, target)
