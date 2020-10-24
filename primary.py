@@ -120,6 +120,7 @@ try:
     print("Now listening on address %s:%d" % (self_host, proto_port))
     while True:
         sock, client_addr = listener.accept()
+        print("New connection established with %s!" % str(client_addr))
         t = threading.Thread(target=handle_proto_message, args=sock)
         t.daemon = True
         t.start()
