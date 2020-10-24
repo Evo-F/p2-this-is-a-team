@@ -67,6 +67,7 @@ def handle_proto_message(sock):
     received_message = sock.recv_until("eot")
     print("RECEIVED A NEW MESSAGE!")
     print(received_message)
+    received_message = received_message.decode()
     if received_message.startswith("okay"):
         return
 
@@ -74,42 +75,50 @@ def handle_proto_message(sock):
     sock.close()
 
 
-def send_http_request(req, target, sendport):
-    addr = (target, sendport)
-    s = socketutil.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.connect(addr)
-    data = req.method + " " + req.path + " " + req.version + "\r\n"
-    data += "Host: "+target
-    data += "\r\n\r\n"
-    print(data)
-
-    s.sendall(data)
-    starttime = time.monotonic()
-    print("Start Time: " + str(starttime))
-    print("Sent data, awaiting response...")
-    responsedata = s.recv_until("\r\n\r\n")
-    if responsedata is None:
-        return
-    endtime = time.monotonic()
-    print("End Time: " + str(endtime))
-    print("Response received!")
-
-    duration = endtime - starttime
-
-    print()
-    print(responsedata.decode())
-    duration = duration * 1000
-    print()
-    print("Raw Time Elapsed: "+str(duration))
-    print("Approx. Time Elapsed (rtt): "+str(round(duration, 2)) + "ms")
+def handle_http_request(sock):
+    return
 
 
 self_host = cloud.gcp_get_my_external_ip()
 print("Currently hosting via: "+str(self_host))
 server_addr = ("", proto_port)
+http_addr = ("", 443)
 listener = socketutil.socket(socket.AF_INET, socket.SOCK_STREAM)
 listener.bind(server_addr)
 listener.listen()
+
+http_listener = socketutil.socket(socket.AF_INET, socket.SOCK_STREAM)
+http_listener.bind(http_addr)
+http_listener.listen()
+
+
+def listen_http():
+    try:
+        print("Now listening on address %s:%d (HTTP)" % (self_host, 443))
+        while True:
+            sock, client_addr = http_listener.accept()
+            print("New HTTP connection established with %s!" % str(client_addr))
+            t = threading.Thread(target=handle_http_request, args=(sock,))
+            t.daemon = True
+            t.start()
+    finally:
+        print("Shutting down HTTP!")
+        http_listener.close()
+
+
+def listen_protocol():
+    try:
+        print("Now listening on address %s:%d (geoloc protocol)" % (self_host, proto_port))
+        while True:
+            sock, client_addr = listener.accept()
+            print("New geoloc connection established with %s!" % str(client_addr))
+            t = threading.Thread(target=handle_proto_message, args=(sock,))
+            t.daemon = True
+            t.start()
+    finally:
+        print("Shutting down geoloc!")
+        listener.close()
+
 
 target = input("Please input the address of a known node, or press enter if this is the first in the network: ")
 
@@ -118,17 +127,14 @@ if target != "":
     message += "eot"
     send_proto_message(message, target)
 
-try:
-    print("Now listening on address %s:%d" % (self_host, proto_port))
-    while True:
-        sock, client_addr = listener.accept()
-        print("New connection established with %s!" % str(client_addr))
-        t = threading.Thread(target=handle_proto_message, args=(sock,))
-        t.daemon = True
-        t.start()
-finally:
-    print("Shutting down!")
-    listener.close()
+t_http = threading.Thread(target=listen_http(), args=())
+t_http.daemon = True
+t_http.start()
+
+t_geoloc = threading.Thread(target=listen_protocol(), args=())
+t_geoloc.daemon = True
+t_geoloc.start()
+
 
 
 
