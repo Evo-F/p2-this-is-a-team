@@ -127,10 +127,10 @@ if target != "":
     message += "eot"
     send_proto_message(message, target)
 
-t_http = threading.Thread(target=listen_http())
+t_http = threading.Thread(target=listen_http)
 print("HTTP thread set up...")
 
-t_geoloc = threading.Thread(target=listen_protocol())
+t_geoloc = threading.Thread(target=listen_protocol)
 print("Geoloc thread set up...")
 
 t_http.start()
