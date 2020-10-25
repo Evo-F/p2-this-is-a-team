@@ -194,9 +194,9 @@ def serve_html_file(path):
     print("Serving HTTP file...")
     file_path = "./web" + path
     file_path = os.path.normpath(file_path)
+    root_path = os.path.normpath("./web")
     print("Actual Filepath: " + file_path)
-    print("Common Prefix: " + os.path.commonprefix([file_path, os.path.normpath("./web")]))
-    if os.path.commonprefix([file_path, "./web"]) != "./web":
+    if os.path.commonprefix([file_path, root_path]) != root_path:
         print("Path traversal attack!")
         return HTTPResponse("403 FORBIDDEN", "text/plain", "Permission denied: " + path)
     if not os.path.isfile(file_path):
