@@ -84,7 +84,7 @@ def send_proto_message(message, target):
 def handle_proto_message(sock, client):
     received_message = sock.recv_str_until("eot")
     message_parts = received_message.splitlines()
-    print("Received new message from %s via port %d" % (client[0], client[1]))
+    print("Received new message from %s via port %d // message text follows:" % (client[0], client[1]))
     print("-----")
     for s in message_parts:
         print(s)
@@ -201,5 +201,17 @@ while True:
         for so in known_contacts:
             send_proto_message("goodbye\neot", so)
         break
+    elif user_input.startswith("count"):
+        print("There are currently [%d] nodes in the network." % nodes_in_network)
+    elif user_input.startswith("heartbeat"):
+        print("Sending a heartbeat to all known contacts...")
+        for so in known_contacts:
+            send_proto_message("heartbeat\neot", so)
+        print("Heartbeat sent.")
+    elif user_input.startswith("contacts"):
+        print("Here are all the known contacts:")
+        for so in known_contacts:
+            print("- %s" % so)
+        print("[[end listing]]")
 
 print("All known contacts notified. Node terminated.")
