@@ -7,6 +7,7 @@ import threading
 http_port = 80
 proto_port = 9299
 self_host = ""
+known_contacts = []
 
 
 class HTTPRequest:
@@ -40,6 +41,12 @@ def parse_url_parts(url):
     return parts
 
 
+def send_hello(contact):
+    if send_proto_message("hello\neot", contact):
+        known_contacts.append(contact)
+    print("Known contacts are now as follows: ", known_contacts)
+
+
 def send_proto_message(message, target):
     addr = (target, proto_port)
     s = socketutil.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -50,24 +57,28 @@ def send_proto_message(message, target):
         print("Connected successfully!")
     except socket.timeout:
         print("ERROR: Attempted to open socket to target %s:%d, but it did not respond!" % (target, proto_port))
-        return
+        return False
 
     s.sendall(message)
 
     try:
-        response = s.recv_until("eot")
+        response = s.recv_str_until("eot")
         while response != "okay":
             s.sendall(message)
         s.close()
+        return True
     except socket.timeout:
         print("ERROR: Other node did not send a response in time!")
+        return False
 
 
-def handle_proto_message(sock):
-    received_message = sock.recv_until("eot")
+def handle_proto_message(sock, client):
+    received_message = sock.recv_str_until("eot")
     print("RECEIVED A NEW MESSAGE!")
     print(received_message)
-    received_message = received_message.decode()
+    if received_message.startswith("hello"):
+        known_contacts.append(client)
+        print("Known contacts are now as follows: ", known_contacts)
     if received_message.startswith("okay"):
         return
 
@@ -75,17 +86,17 @@ def handle_proto_message(sock):
     sock.close()
 
 
-def handle_http_request(sock):
+def handle_http_request(sock, client):
     return
 
 
 def listen_http():
     try:
-        print("Now listening on address %s:%d (HTTP)" % (self_host, 443))
+        print("Now listening on address %s:%d (HTTP)" % (self_host, http_port))
         while True:
             sock, client_addr = http_listener.accept()
             print("New HTTP connection established with %s!" % str(client_addr))
-            t = threading.Thread(target=handle_http_request, args=(sock,))
+            t = threading.Thread(target=handle_http_request, args=(sock, client_addr,))
             t.daemon = True
             t.start()
     finally:
@@ -99,7 +110,7 @@ def listen_protocol():
         while True:
             sock, client_addr = listener.accept()
             print("New geoloc connection established with %s!" % str(client_addr))
-            t = threading.Thread(target=handle_proto_message, args=(sock,))
+            t = threading.Thread(target=handle_proto_message, args=(sock, client_addr,))
             t.daemon = True
             t.start()
     finally:
@@ -110,7 +121,7 @@ def listen_protocol():
 self_host = cloud.gcp_get_my_external_ip()
 print("Currently hosting via: "+str(self_host))
 server_addr = ("", proto_port)
-http_addr = ("", 443)
+http_addr = ("", http_port)
 listener = socketutil.socket(socket.AF_INET, socket.SOCK_STREAM)
 listener.bind(server_addr)
 listener.listen()
@@ -120,12 +131,10 @@ http_listener.bind(http_addr)
 http_listener.listen()
 
 
-target = input("Please input the address of a known node, or press enter if this is the first in the network: ")
+itarget = input("Please input the address of a known node, or press enter if this is the first in the network: ")
 
-if target != "":
-    message = "hello\n"
-    message += "eot"
-    send_proto_message(message, target)
+if itarget != "":
+    send_hello(itarget)
 
 t_http = threading.Thread(target=listen_http)
 print("HTTP thread set up...")
