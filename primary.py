@@ -380,11 +380,13 @@ def serve_html_file(path):
 
 
 def serve_analysis(request_id):
+    global self_host
     print("Attempting to serve analysis page...")
     try:
         with open("web/analysis.html", "rb") as f:
             data = f.read()
         listified_results = process_results()
+        print(listified_results)
         datastring = data.decode()
         datastring = datastring.format(hostname=gathered_results[request_id][self_host].target,
                                        results=listified_results)
