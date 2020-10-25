@@ -66,7 +66,7 @@ def process_specific_url(url):
     except:
         return -1, -1
 
-    ping_request = "HEAD %s HTTP/1.1" % parts[2]
+    ping_request = "HEAD %s HTTP/1.1\r\n" % parts[2]
     target_url_sock.sendall(ping_request)
     starttime = time.monotonic()
     try:
