@@ -161,6 +161,13 @@ def handle_http_request(sock, client):
     request_root = request_lines[0]
     request_root_args = request_root.split()
 
+    keepalive = False
+
+    for s in request_lines:
+        if s.startswith("Connection") and s.endswith("keep-alive"):
+            keepalive = True
+            break
+
     req.method = request_root_args[0]
     req.path = request_root_args[1]
     req.version = request_root_args[2]
@@ -175,17 +182,20 @@ def handle_http_request(sock, client):
         resp.mime_type = "text/plain"
         resp.body = "We don't support non-GET methods!"
 
-    send_http_response(sock, resp)
+    send_http_response(sock, resp, keepalive)
 
 
-def send_http_response(sock, resp):
+def send_http_response(sock, resp, keepalive):
     data = "HTTP/1.1 " + resp.code + "\r\n"
     data += "Server: " + cloud.dnsname + "\r\n"
     data += "Data: " + time.strftime("%a, %d %b %Y %H:%M:%S %Z") + "\r\n"
 
     data += "Content-Type: " + resp.mime_type + "\r\n"
     data += "Content-Length: " + str(len(resp.body)) + "\r\n"
-    data += "Connection: close\r\n"
+    if keepalive is True:
+        data += "Connection: keep-alive\r\n"
+    else:
+        data += "Connection: close\r\n"
     sock.sendall(data.encode())
     sock.sendall(resp.body)
 
