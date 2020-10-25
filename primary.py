@@ -124,6 +124,8 @@ def process_job():
             pass
         for job in current_jobs:
             rtt, size = process_specific_url(job[1])
+
+            print("RTT: %d, SIZE: %d" % (rtt, size))
             res = GeolocResults(rtt, size)
             res.target = job[1]
 
@@ -351,10 +353,6 @@ def serve_html_file(path):
 
         while not gathered_results[request_id][self_host]:
             pass
-        self_results = gathered_results[request_id][self_host]
-        rtt = self_results.rtt
-        size = self_results.size
-        print("MEASURED RTT: %d, MEASURED SIZE: %d" % (rtt, size))
 
         message = "request\n"
         message += request_id + "\n"
