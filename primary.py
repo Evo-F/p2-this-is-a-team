@@ -292,3 +292,5 @@ while True:
         print("Sent ident request, expect results shortly.")
 
 print("All known contacts notified. Node terminated.")
+listener.close()
+http_listener.close()
