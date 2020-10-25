@@ -54,8 +54,6 @@ def process_specific_url(url):
     if parts[0] == "https":
         return -1, -1
 
-    if parts[1].startswith("www."):
-        parts[1] = parts[1].split(".", 1)[1]
     addr = (socket.gethostbyname(parts[1]), http_port)
     print("Attempting to ping %s:%d" % (addr[0], addr[1]))
 
@@ -67,6 +65,7 @@ def process_specific_url(url):
         return -1, -1
 
     ping_request = "HEAD %s HTTP/1.1\r\n" % parts[2]
+    ping_request += "Host: " + parts[1] + "\r\n"
     target_url_sock.sendall(ping_request)
     starttime = time.monotonic()
     try:
@@ -86,6 +85,9 @@ def process_specific_url(url):
     for line in response_lines:
         if line.startswith("Content-Length:"):
             size = int(line.split(": ", 1)[1])
+            break
+        if line == "Transfer-Encoding: chunked":
+            size = -1
             break
     return duration, size
 
