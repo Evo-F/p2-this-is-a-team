@@ -167,13 +167,11 @@ def handle_http_request(sock, client):
 
     print("Method: %s | Path: %s | Version: %s" % (req.method, req.path, req.version))
 
-    resp = HTTPResponse()
-
     if req.method == "GET":
         req.path = "/form.html"
         resp = serve_html_file(req.path)
     else:
-        resp.code = "405 METHOD NOT ALLOWED"
+        resp = HTTPResponse("405 METHOD NOT ALLOWED")
         resp.mime_type = "text/plain"
         resp.body = "We don't support non-GET methods!"
 
