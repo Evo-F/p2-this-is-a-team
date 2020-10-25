@@ -62,9 +62,12 @@ def send_proto_message(message, target):
     s.sendall(message)
 
     try:
+        print("Awaiting response...")
         response = s.recv_str_until("eot")
+        print("Response received: %s" % response)
         while response != "okay":
             s.sendall(message)
+            response = s.recv_str_until("eot")
         s.close()
         return True
     except socket.timeout:
@@ -77,12 +80,14 @@ def handle_proto_message(sock, client):
     print("RECEIVED A NEW MESSAGE!")
     print(received_message)
     if received_message.startswith("hello"):
-        known_contacts.append(client)
+        known_contacts.append(client[0])
         print("Known contacts are now as follows: ", known_contacts)
     if received_message.startswith("okay"):
         return
 
+    print("Sending OKAY response...")
     sock.sendall("okay\neot")
+    print("OKAY response sent, closing socket...")
     sock.close()
 
 
