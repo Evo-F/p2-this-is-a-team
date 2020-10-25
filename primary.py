@@ -122,6 +122,7 @@ def process_job():
             # spin until we have a job to do
             pass
         for job in current_jobs:
+            print("Began new job!")
             rtt, size = process_specific_url(job[1])
 
             print("RTT: %d, SIZE: %d" % (rtt, size))
@@ -349,6 +350,7 @@ def serve_html_file(path):
         print("Request ID: " + request_id)
 
         current_jobs.append((request_id, analysis_target, self_host))
+        print("Appended new job.")
 
         message = "request\n"
         message += request_id + "\n"
@@ -367,6 +369,7 @@ def serve_html_file(path):
 
 
 def serve_analysis(request_id):
+    print("Attempting to serve analysis page...")
     try:
         with open("web/analysis.html", "rb") as f:
             data = f.read()
