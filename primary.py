@@ -140,7 +140,7 @@ def process_job():
                 # we did somebody else's job and now we need to send the results
                 send_results(job[2], res, job[0])
 
-            del job
+            current_jobs.remove(job)
 
 
 def send_hello(contact):
@@ -388,7 +388,7 @@ def serve_analysis(request_id):
         return HTTPResponse("200 OK", "text/html", data)
     except:
         print("File read error!")
-        return HTTPResponse("403 FORBIDDEN", "text/plain", "Permission denied: web/analysis.html")
+        return HTTPResponse("403 FORBIDDEN", "text/plain", "File read error: web/analysis.html")
 
     return serve_index()
 
