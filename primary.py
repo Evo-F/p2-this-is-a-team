@@ -38,6 +38,7 @@ def request_id_gen():
         result.join(random.choice(chars))
     return result
 
+
 def parse_url_parts(url):
     parts = []
     url_prot_rem = url.split("://")
@@ -212,6 +213,10 @@ def send_http_response(sock, resp, keepalive):
 
 def serve_html_file(path):
     print("Serving HTTP file...")
+
+    return serve_index()
+    # at the moment, just keep showing the form
+
     file_path = "./web" + path
     file_path = os.path.normpath(file_path)
     root_path = os.path.normpath("./web")
@@ -229,6 +234,20 @@ def serve_html_file(path):
     except:
         print("File read error!")
         return HTTPResponse("403 FORBIDDEN", "text/plain", "Permission denied: " + path)
+
+
+def serve_index():
+    try:
+        with open("web/form.html", "rb") as f:
+            data = f.read()
+
+        datastring = data.decode()
+        datastring = datastring.format(currentserver=cloud.dnsname, servercount=nodes_in_network)
+        data = datastring.encode()
+        return HTTPResponse("200 OK", "text/html", data)
+    except:
+        print("File read error!")
+        return HTTPResponse("403 FORBIDDEN", "text/plain", "Permission denied: web/form.html")
 
 
 def listen_http():
