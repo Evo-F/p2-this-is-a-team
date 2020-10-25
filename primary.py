@@ -203,6 +203,7 @@ def send_http_response(sock, resp, keepalive):
     print("Sending the following response:")
     print("-----")
     print(data)
+    print(resp.body)
     print("-----")
     sock.sendall(data.encode())
     sock.sendall(resp.body)
