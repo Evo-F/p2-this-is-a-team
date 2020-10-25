@@ -391,7 +391,7 @@ def serve_analysis(request_id):
         with open("web/analysis.html", "rb") as f:
             data = f.read()
         print("File read! Processing results...")
-        listified_results = process_results()
+        listified_results = process_results(request_id)
         print("Processed results!")
         print(listified_results)
         datastring = data.decode()
