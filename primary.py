@@ -341,6 +341,7 @@ def send_http_response(sock, resp, keepalive):
 
 def serve_html_file(path):
     global gathered_results
+    global nodes_in_network
     if path.startswith("/analyze"):
         analysis_args = path.split("?", 1)[1]
         analysis_args = urllib.parse.unquote(analysis_args)
