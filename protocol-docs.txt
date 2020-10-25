@@ -9,6 +9,7 @@ Types of requests are as follows:
 - contact (used for telling Node A to establish a connection with Node B)
 - okay (used for acknowledging certain request types)
 - heartbeat (used for testing only, to acknowledge a node's presence)
+- headcount (used to signify how many nodes are in the network, including the new node if applicable)
 
 SAMPLE REQUEST BODIES:
 - hello
