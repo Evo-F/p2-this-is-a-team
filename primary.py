@@ -49,6 +49,7 @@ def request_id_gen():
 def process_results(job_id):
     global gathered_results
     r_list = ""
+    print(gathered_results[job_id].items())
     for host in gathered_results[job_id]:
         print("Getting some results...")
         res = gathered_results[job_id][host]
