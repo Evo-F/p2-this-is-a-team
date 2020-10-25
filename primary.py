@@ -228,6 +228,7 @@ def handle_proto_message(sock, client):
                 nodes_in_network += 1
                 send_headcount = True
                 known_contacts.append(client[0])
+                send_proto_message("headcount\n%d\neot" % nodes_in_network, client[0])
 
     elif received_message.startswith("heartbeat"):
         print("Heard a heartbeat from %s!" % client[0])
@@ -282,7 +283,8 @@ def handle_proto_message(sock, client):
 
     if send_headcount is True:
         for kc in known_contacts:
-            send_proto_message("headcount\n%d\neot" % nodes_in_network, kc)
+            if kc != client[0]:
+                send_proto_message("headcount\n%d\neot" % nodes_in_network, kc)
 
 
 def handle_http_request(sock, client):
