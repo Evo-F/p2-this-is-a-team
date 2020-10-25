@@ -351,9 +351,6 @@ def serve_html_file(path):
 
         current_jobs.append((request_id, analysis_target, self_host))
 
-        while not gathered_results[request_id][self_host]:
-            pass
-
         message = "request\n"
         message += request_id + "\n"
         message += analysis_target +"\n"
