@@ -244,10 +244,12 @@ print("Currently hosting via: "+str(self_host))
 server_addr = ("", proto_port)
 http_addr = ("", http_port)
 listener = socketutil.socket(socket.AF_INET, socket.SOCK_STREAM)
+listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 listener.bind(server_addr)
 listener.listen()
 
 http_listener = socketutil.socket(socket.AF_INET, socket.SOCK_STREAM)
+http_listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 http_listener.bind(http_addr)
 http_listener.listen()
 
