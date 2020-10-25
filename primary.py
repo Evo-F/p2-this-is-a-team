@@ -54,6 +54,8 @@ def process_specific_url(url):
     if parts[0] == "https":
         return -1, -1
 
+    if parts[1].startswith("www."):
+        parts[1] = parts[1].split("www.")[0]
     addr = (parts[1], http_port)
     print("Attempting to ping %s:%d" % (addr[0], addr[1]))
     target_url_sock = socketutil.socket(socket.AF_INET, socket.SOCK_STREAM)
