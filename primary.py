@@ -1,6 +1,7 @@
 import socket
 import socketutil
 import time
+import random
 import cloud
 import threading
 
@@ -8,6 +9,9 @@ http_port = 80
 proto_port = 9299
 self_host = ""
 known_contacts = []
+current_jobs = {}
+outsourced_jobs = {}
+nodes_in_network = 1
 
 
 class HTTPRequest:
@@ -28,6 +32,13 @@ class HTTPResponse:
         self.body = body
 
 
+def request_id_gen():
+    chars = "abcdefghijklmnopqrstuvwxyz1234567890"
+    result = ""
+    for i in range(8):
+        result.join(random.choice(chars))
+    return result
+
 def parse_url_parts(url):
     parts = []
     url_prot_rem = url.split("://")
@@ -44,17 +55,14 @@ def parse_url_parts(url):
 def send_hello(contact):
     if send_proto_message("hello\neot", contact):
         known_contacts.append(contact)
-    print("Known contacts are now as follows: ", known_contacts)
 
 
 def send_proto_message(message, target):
     addr = (target, proto_port)
     s = socketutil.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.settimeout(10)
-    print("Attempting to send message to %s:%d" % (target, proto_port))
     try:
         s.connect(addr)
-        print("Connected successfully!")
     except socket.timeout:
         print("ERROR: Attempted to open socket to target %s:%d, but it did not respond!" % (target, proto_port))
         return False
@@ -62,12 +70,11 @@ def send_proto_message(message, target):
     s.sendall(message)
 
     try:
-        print("Awaiting response...")
-        response = s.recv_str_until("eot")
-        print("Response received: %s" % response)
-        while not response.startswith("okay"):
-            s.sendall(message)
+        while True:
             response = s.recv_str_until("eot")
+            if response.startswith("okay") or response.startswith("contact"):
+                break
+            s.sendall(message)
         s.close()
         return True
     except socket.timeout:
@@ -77,23 +84,55 @@ def send_proto_message(message, target):
 
 def handle_proto_message(sock, client):
     received_message = sock.recv_str_until("eot")
-    print("RECEIVED A NEW MESSAGE!")
-    print(received_message)
-    if received_message.startswith("hello"):
-        known_contacts.append(client[0])
-        print("Known contacts are now as follows: ", known_contacts)
-    if received_message.startswith("heartbeat"):
-        print("Heard a heartbeat from %s!" % client[0])
-    if received_message.startswith("okay"):
-        return
+    message_parts = received_message.splitlines()
+    print("Received new message from %s via port %d" % (client[0], client[1]))
+    print("-----")
+    for s in message_parts:
+        print(s)
+    print("-----")
+    send_okay = True
+    send_headcount = False
+    global nodes_in_network
 
-    print("Sending OKAY response...")
-    sock.sendall("okay\neot")
-    print("OKAY response sent, closing socket...")
+    if received_message.startswith("okay"):
+        # prevents infinite loops of okay responses
+        send_okay = False
+
+    elif received_message.startswith("hello"):
+        if len(known_contacts) > nodes_in_network/2 and len(known_contacts) > 2:
+            send_okay = False
+            sock.sendall("contact\n%s\neot" % known_contacts[1])
+        else:
+            if client[0] not in known_contacts:
+                nodes_in_network += 1
+                send_headcount = True
+                known_contacts.append(client[0])
+
+    elif received_message.startswith("heartbeat"):
+        print("Heard a heartbeat from %s!" % client[0])
+
+    elif received_message.startswith("goodbye"):
+        if client[0] in known_contacts:
+            known_contacts.remove(client[0])
+
+    elif received_message.startswith("headcount"):
+        nodes_in_network = int(message_parts[1])
+        print("Adjusted headcount is now: %d" % nodes_in_network)
+
+    elif received_message.startswith("contact"):
+        send_hello(message_parts[1])
+
+    if send_okay is True:
+        sock.sendall("okay\neot")
     sock.close()
+
+    if send_headcount is True:
+        for so in known_contacts:
+            send_proto_message("headcount\n%d\neot" % nodes_in_network, so)
 
 
 def handle_http_request(sock, client):
+    print("LMAO WE DON'T DO THAT YET!")
     return
 
 
@@ -151,12 +190,4 @@ print("Geoloc thread set up...")
 
 t_http.start()
 t_geoloc.start()
-
-for co in known_contacts:
-    send_proto_message("heartbeat\neot", co)
-
-
-
-
-
 
