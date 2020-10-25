@@ -191,7 +191,7 @@ def handle_http_request(sock, client):
 def send_http_response(sock, resp, keepalive):
     data = "HTTP/1.1 " + resp.code + "\r\n"
     data += "Server: " + cloud.dnsname + "\r\n"
-    data += "Data: " + time.strftime("%a, %d %b %Y %H:%M:%S %Z") + "\r\n"
+    data += "Date: " + time.strftime("%a, %d %b %Y %H:%M:%S %Z") + "\r\n"
 
     data += "Content-Type: " + resp.mime_type + "\r\n"
     data += "Content-Length: " + str(len(resp.body)) + "\r\n"
