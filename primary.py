@@ -82,6 +82,8 @@ def handle_proto_message(sock, client):
     if received_message.startswith("hello"):
         known_contacts.append(client[0])
         print("Known contacts are now as follows: ", known_contacts)
+    if received_message.startswith("heartbeat"):
+        print("Heard a heartbeat from %s!" % client[0])
     if received_message.startswith("okay"):
         return
 
@@ -150,6 +152,8 @@ print("Geoloc thread set up...")
 t_http.start()
 t_geoloc.start()
 
+for co in known_contacts:
+    send_proto_message("heartbeat\neot", co)
 
 
 

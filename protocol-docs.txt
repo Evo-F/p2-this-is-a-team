@@ -8,6 +8,7 @@ Types of requests are as follows:
 - goodbye (used for removing nodes from the network)
 - contact (used for telling Node A to establish a connection with Node B)
 - okay (used for acknowledging certain request types)
+- heartbeat (used for testing only, to acknowledge a node's presence)
 
 SAMPLE REQUEST BODIES:
 - hello
@@ -35,3 +36,6 @@ SAMPLE REQUEST BODIES:
 
 - okay
 - eot
+
+- heartbeat
+- okay
