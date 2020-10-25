@@ -226,7 +226,7 @@ def serve_html_file(path):
 
     file_path = "./web" + path
     file_path = os.path.normpath(file_path)
-
+    print("Raw Path: " + path)
     root_path = os.path.normpath("./web")
     print("Actual Filepath: " + file_path)
     if os.path.commonprefix([file_path, root_path]) != root_path:
@@ -235,7 +235,7 @@ def serve_html_file(path):
     if not os.path.isfile(file_path):
         print("File not found!")
         return HTTPResponse("404 NOT FOUND", "text/plain", "No such file: " + path)
-    if path in ["/", "/index.html"]:
+    if path in ["/", "/index.html", "/form.html"]:
         return serve_index()
     try:
         with open(file_path, "rb") as f:
