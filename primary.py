@@ -4,6 +4,7 @@ import time
 import random
 import cloud
 import threading
+import os
 
 http_port = 80
 proto_port = 9299
@@ -27,7 +28,6 @@ class HTTPResponse:
     def __init__(self, code, mime_type=None, body=None):
         self.code = code
         self.mime_type = mime_type
-        self.headers = []
         self.body = body
 
 
@@ -153,8 +153,62 @@ def handle_proto_message(sock, client):
 
 
 def handle_http_request(sock, client):
-    print("LMAO WE DON'T DO THAT YET!")
-    return
+    print("New HTTP request from client %s:%d" % (client[0], client[1]))
+    request = sock.recv_str_until("\r\n\r\n")
+    request_lines = request.splitlines()
+    req = HTTPRequest()
+
+    request_root = request_lines[0]
+    request_root_args = request_root.split()
+
+    req.method = request_root_args[0]
+    req.path = request_root_args[1]
+    req.version = request_root_args[2]
+
+    print("Method: %s | Path: %s | Version: %s" % (req.method, req.path, req.version))
+
+    resp = HTTPResponse()
+
+    if req.method == "GET":
+        req.path = "/form.html"
+        resp = serve_html_file(req.path)
+    else:
+        resp.code = "405 METHOD NOT ALLOWED"
+        resp.mime_type = "text/plain"
+        resp.body = "We don't support non-GET methods!"
+
+    send_http_response(sock, resp)
+
+
+def send_http_response(sock, resp):
+    data = "HTTP/1.1 " + resp.code + "\r\n"
+    data += "Server: " + cloud.dnsname + "\r\n"
+    data += "Data: " + time.strftime("%a, %d %b %Y %H:%M:%S %Z") + "\r\n"
+
+    data += "Content-Type: " + resp.mime_type + "\r\n"
+    data += "Content-Length: " + str(len(resp.body)) + "\r\n"
+    data += "Connection: close\r\n"
+    sock.sendall(data.encode())
+    sock.sendall(resp.body)
+
+
+def serve_html_file(path):
+    print("Serving HTTP file...")
+    file_path = "./web" + path
+    file_path = os.path.normpath(file_path)
+    if os.path.commonprefix([file_path, "./web"]) != "./web":
+        print("Path traversal attack!")
+        return HTTPResponse("403 FORBIDDEN", "text/plain", "Permission denied: " + path)
+    if not os.path.isfile(file_path):
+        print("File not found!")
+        return HTTPResponse("404 NOT FOUND", "text/plain", "No such file: " + path)
+    try:
+        with open(file_path, "rb") as f:
+            data = f.read()
+        return HTTPResponse("200 OK", "text/html", data)
+    except:
+        print("File read error!")
+        return HTTPResponse("403 FORBIDDEN", "text/plain", "Permission denied: " + path)
 
 
 def listen_http():
