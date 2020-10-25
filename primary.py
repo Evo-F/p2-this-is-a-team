@@ -195,6 +195,7 @@ def serve_html_file(path):
     file_path = "./web" + path
     file_path = os.path.normpath(file_path)
     print("Actual Filepath: " + file_path)
+    print("Common Prefix: " + os.path.commonprefix([file_path, "./web"]))
     if os.path.commonprefix([file_path, "./web"]) != "./web":
         print("Path traversal attack!")
         return HTTPResponse("403 FORBIDDEN", "text/plain", "Permission denied: " + path)
@@ -295,3 +296,4 @@ while True:
 print("All known contacts notified. Node terminated.")
 listener.close()
 http_listener.close()
+
