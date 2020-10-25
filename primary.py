@@ -155,6 +155,9 @@ def handle_proto_message(sock, client):
 def handle_http_request(sock, client):
     print("New HTTP request from client %s:%d" % (client[0], client[1]))
     request = sock.recv_str_until("\r\n\r\n")
+    print("-----")
+    print(request)
+    print("-----")
     request_lines = request.splitlines()
     req = HTTPRequest()
 
