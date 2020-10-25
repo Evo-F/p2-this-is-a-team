@@ -118,6 +118,7 @@ def parse_url_parts(url):
 
 def process_job():
     global current_jobs
+    print("Started process_job loop....")
 
     while True:
         while not current_jobs:
@@ -471,6 +472,7 @@ print("Worker thread set up...")
 
 t_http.start()
 t_geoloc.start()
+t_worker.start()
 
 while True:
     user_input = input()
