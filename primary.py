@@ -33,12 +33,57 @@ class HTTPResponse:
         self.body = body
 
 
+class GeolocJob:
+    def __init__(self, target, requester):
+        self.target = target
+        self.requester = requester
+        self.result_rtt = 0.0
+        self.result_size = 0
+
+
 def request_id_gen():
     chars = "abcdefghijklmnopqrstuvwxyz1234567890"
     result = ""
     for i in range(8):
         result.join(random.choice(chars))
     return result
+
+
+def process_specific_url(url):
+    parts = parse_url_parts(url)
+    if parts[0] == "https":
+        return -1, -1
+
+    addr = (parts[1], http_port)
+    target_url_sock = socketutil.socket(socket.AF_INET, socket.SOCK_STREAM)
+    target_url_sock.settimeout(10)
+    try:
+        target_url_sock.connect(addr)
+    except:
+        return -1, -1
+
+    ping_request = "HEAD %s HTTP/1.1" % parts[2]
+    target_url_sock.sendall(ping_request)
+    starttime = time.monotonic()
+    try:
+        response = target_url_sock.recv_str_until("\r\n\r\n")
+        endtime = time.monotonic()
+        print("-----")
+        print(response)
+        print("-----")
+    except:
+        return -1, -1
+
+    duration = endtime - starttime
+    duration = duration * 1000
+    print("Duration: %dms" % duration)
+    response_lines = response.split("\r\n")
+    size = 0;
+    for line in response_lines:
+        if line.startswith("Content-Length:"):
+            size = int(line.split(": ", 1)[1])
+            break
+    return duration, size
 
 
 def parse_url_parts(url):
@@ -52,6 +97,17 @@ def parse_url_parts(url):
     else:
         parts.append("/"+url_path_rem[1])
     return parts
+
+
+def process_job():
+    while True:
+        while not bool(current_jobs):
+            # spin until we have a job to do
+            pass
+        for job_id in current_jobs:
+            rtt, size = process_specific_url(current_jobs[job_id].target)
+            current_jobs[job_id].result_rtt = rtt
+            current_jobs[job_id].result_size = size
 
 
 def send_hello(contact):
@@ -225,7 +281,33 @@ def serve_html_file(path):
     if path.startswith("/analyze"):
         analysis_args = path.split("?", 1)[1]
         analysis_args = urllib.parse.unquote(analysis_args)
+        analysis_target = ""
         print(analysis_args)
+        analysis_args = analysis_args.split("&")
+        for s in analysis_args:
+            if s.startswith("target="):
+                analysis_target = s.split("=")[1]
+                break
+        request_id = request_id_gen()
+
+        outsourced_jobs[request_id] = analysis_target
+
+        print("TESTING THE PROCESS FUNCTION")
+
+        rtt, size = process_specific_url(analysis_target)
+        print("MEASURED RTT: %d, MEASURED SIZE: %d" % (rtt, size))
+        return serve_index()
+
+        message = "request\n"
+        message += request_id + "\n"
+        message += analysis_target +"\n"
+        message += self_host + "\n"
+        message += "eot"
+
+        for kc in known_contacts:
+            send_proto_message(message, kc)
+
+
 
     print("Serving HTTP file...")
 
@@ -328,6 +410,10 @@ t_geoloc = threading.Thread(target=listen_protocol)
 t_geoloc.daemon = True
 print("Geoloc thread set up...")
 
+t_worker = threading.Thread(target=process_job)
+t_worker.daemon = True
+print("Worker thread set up...")
+
 t_http.start()
 t_geoloc.start()
 
@@ -357,6 +443,4 @@ while True:
         print("Sent ident request, expect results shortly.")
 
 print("All known contacts notified. Node terminated.")
-listener.close()
-http_listener.close()
 
