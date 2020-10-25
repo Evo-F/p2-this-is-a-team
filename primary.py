@@ -7,7 +7,6 @@ import threading
 
 http_port = 80
 proto_port = 9299
-self_host = ""
 known_contacts = []
 current_jobs = {}
 outsourced_jobs = {}
@@ -114,6 +113,8 @@ def handle_proto_message(sock, client):
     elif received_message.startswith("goodbye"):
         if client[0] in known_contacts:
             known_contacts.remove(client[0])
+            nodes_in_network -= 1
+            send_headcount = True
 
     elif received_message.startswith("headcount"):
         nodes_in_network = int(message_parts[1])
@@ -127,8 +128,8 @@ def handle_proto_message(sock, client):
     sock.close()
 
     if send_headcount is True:
-        for so in known_contacts:
-            send_proto_message("headcount\n%d\neot" % nodes_in_network, so)
+        for kc in known_contacts:
+            send_proto_message("headcount\n%d\neot" % nodes_in_network, kc)
 
 
 def handle_http_request(sock, client):
@@ -183,11 +184,22 @@ if itarget != "":
     send_hello(itarget)
 
 t_http = threading.Thread(target=listen_http)
+t_http.daemon = True
 print("HTTP thread set up...")
 
 t_geoloc = threading.Thread(target=listen_protocol)
+t_geoloc.daemon = True
 print("Geoloc thread set up...")
 
 t_http.start()
 t_geoloc.start()
 
+while True:
+    user_input = input()
+    if user_input.startswith("quit"):
+        print("Understood, terminating program...")
+        for so in known_contacts:
+            send_proto_message("goodbye\neot", so)
+        break
+
+print("All known contacts notified. Node terminated.")
