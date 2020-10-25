@@ -65,7 +65,7 @@ def send_proto_message(message, target):
         print("Awaiting response...")
         response = s.recv_str_until("eot")
         print("Response received: %s" % response)
-        while response != "okay":
+        while not response.startswith("okay"):
             s.sendall(message)
             response = s.recv_str_until("eot")
         s.close()
