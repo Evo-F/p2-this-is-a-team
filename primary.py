@@ -370,8 +370,10 @@ def serve_html_file(path):
         for kc in known_contacts:
             send_proto_message(message, kc)
 
-        while len(gathered_results) < nodes_in_network:
+        print("Waiting for results...")
+        while len(gathered_results[request_id]) < nodes_in_network:
             pass
+        print("All results are in (%d)!" % len(gathered_results[request_id]))
         return serve_analysis(request_id)
 
     return serve_index()
