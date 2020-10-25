@@ -118,6 +118,7 @@ def parse_url_parts(url):
 
 def process_job():
     global current_jobs
+    global gathered_results
     print("Started process_job loop....")
 
     while True:
@@ -351,6 +352,9 @@ def serve_html_file(path):
                 break
         request_id = request_id_gen()
         print("Request ID: " + request_id)
+
+        global gathered_results
+        gathered_results[request_id] = {}
 
         current_jobs.append((request_id, analysis_target, self_host))
         print("Appended new job.")
