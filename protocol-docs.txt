@@ -25,9 +25,9 @@ SAMPLE REQUEST BODIES:
 
 - result
 - [request ID]
+- [target URL]
 - [RTT]
-- [yes/no] //if yes, the remaining data is a complete HTML file for analysis
-- {if yes above, HTML file goes here}
+- [size]
 - eot
 
 - goodbye

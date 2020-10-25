@@ -1,0 +1,21 @@
+<html>
+<head><title>Where In The W-URL-D?</title></head>
+<body>
+  <h1>Simple URL Geolocation Service</h1>
+  <h2>Query Results for {hostname}</h2>
+
+  <font color="blue">
+  <pre>
+    {results}
+  </pre>
+  </font>
+
+  <p>
+    <form action="/analyze" method="GET">
+      Enter a URL to analyze! (HTTPS is not supported yet, only HTTP so far, sorry):<br>
+      <input type="text" name="target" size="80" value="http://www.voanews.com/press-freedom">
+      <input type="submit">
+    </form>
+  </p>
+</body>
+</html>

@@ -4,15 +4,14 @@ import time
 import random
 import cloud
 import threading
-import os
 import urllib
 
 http_port = 80
 proto_port = 9299
 known_contacts = []
 all_nodes_listified = ""
-current_jobs = {}
-outsourced_jobs = {}
+current_jobs = []
+gathered_results = {}
 nodes_in_network = 1
 
 
@@ -33,12 +32,11 @@ class HTTPResponse:
         self.body = body
 
 
-class GeolocJob:
-    def __init__(self, target, requester):
-        self.target = target
-        self.requester = requester
-        self.result_rtt = 0.0
-        self.result_size = 0
+class GeolocResults:
+    def __init__(self, rtt, size):
+        self.target = ""
+        self.rtt = rtt
+        self.size = size
 
 
 def request_id_gen():
@@ -47,6 +45,17 @@ def request_id_gen():
     for i in range(8):
         result.join(random.choice(chars))
     return result
+
+
+def process_results(job_id):
+    r_list = ""
+    data = ""
+    for host in gathered_results[job_id]:
+        res = gathered_results[job_id][host]
+        data = "%s // RTT: %d // SIZE: %d" % (host, res.rtt, res.size)
+        data += "\n"
+        r_list += data
+    return r_list
 
 
 def process_specific_url(url):
@@ -110,18 +119,37 @@ def parse_url_parts(url):
 
 def process_job():
     while True:
-        while not bool(current_jobs):
+        while not current_jobs:
             # spin until we have a job to do
             pass
-        for job_id in current_jobs:
-            rtt, size = process_specific_url(current_jobs[job_id].target)
-            current_jobs[job_id].result_rtt = rtt
-            current_jobs[job_id].result_size = size
+        for job in current_jobs:
+            rtt, size = process_specific_url(job[1])
+            res = GeolocResults(rtt, size)
+            res.target = job[1]
+
+            if job[2].requester == self_host:
+                # we just did our own job and got some results for it
+                gathered_results[job[0]][self_host] = res
+            else:
+                # we did somebody else's job and now we need to send the results
+                send_results(job[2], res, job[0])
+
+            del job
 
 
 def send_hello(contact):
     if send_proto_message("hello\neot", contact):
         known_contacts.append(contact)
+
+
+def send_results(contact, results, id):
+    message = "result\n"
+    message += id + "\n"
+    message += results.target + "\n"
+    message += results.rtt + "\n"
+    message += results.size + "\n"
+    message += "eot"
+    send_proto_message(message, contact)
 
 
 def send_ident_report(contact):
@@ -148,8 +176,10 @@ def send_proto_message(message, target):
     try:
         while True:
             response = s.recv_str_until("eot")
-            if response.startswith("okay") or response.startswith("contact"):
+            if response.startswith("okay"):
                 break
+            if response.startswith("contact"):
+                return False
             s.sendall(message)
         s.close()
         return True
@@ -200,6 +230,7 @@ def handle_proto_message(sock, client):
 
     elif received_message.startswith("headcount"):
         nodes_in_network = int(message_parts[1])
+        send_headcount = True
         print("Adjusted headcount is now: %d" % nodes_in_network)
 
     elif received_message.startswith("contact"):
@@ -220,13 +251,29 @@ def handle_proto_message(sock, client):
                                                           message_parts[2], message_parts[3])
         all_nodes_listified += "\n"
 
+    elif received_message.startswith("result"):
+        job_id = message_parts[1]
+        reported_rtt = float(message_parts[3])
+        reported_size = int(message_parts[4])
+        reporting_node = client[0]
+        res = GeolocResults(reported_rtt, reported_size)
+        res.target = message_parts[2]
+        gathered_results[job_id][reporting_node] = res
+
+    elif received_message.startswith("request"):
+        job_id = message_parts[1]
+        target = message_parts[2]
+        requester = message_parts[3]
+        current_jobs.append((job_id, target, requester))
+
     if send_okay is True:
         sock.sendall("okay\neot")
     sock.close()
 
     if send_headcount is True:
         for kc in known_contacts:
-            send_proto_message("headcount\n%d\neot" % nodes_in_network, kc)
+            if kc != client[0]:
+                send_proto_message("headcount\n%d\neot" % nodes_in_network, kc)
 
 
 def handle_http_request(sock, client):
@@ -299,13 +346,12 @@ def serve_html_file(path):
                 break
         request_id = request_id_gen()
 
-        outsourced_jobs[request_id] = analysis_target
+        current_jobs.append((request_id, analysis_target, self_host))
 
-        print("TESTING THE PROCESS FUNCTION")
-
-        rtt, size = process_specific_url(analysis_target)
+        self_results = gathered_results[request_id][self_host]
+        rtt = self_results.rtt
+        size = self_results.size
         print("MEASURED RTT: %d, MEASURED SIZE: %d" % (rtt, size))
-        return serve_index()
 
         message = "request\n"
         message += request_id + "\n"
@@ -316,31 +362,28 @@ def serve_html_file(path):
         for kc in known_contacts:
             send_proto_message(message, kc)
 
+        while len(gathered_results) < nodes_in_network:
+            pass
+        return serve_analysis(request_id)
+
+    return serve_index()
 
 
-    print("Serving HTTP file...")
-
-    file_path = "./web" + path
-    file_path = os.path.normpath(file_path)
-    print("Raw Path: " + path)
-    root_path = os.path.normpath("./web")
-    print("Actual Filepath: " + file_path)
-    if os.path.commonprefix([file_path, root_path]) != root_path:
-        print("Path traversal attack!")
-        return HTTPResponse("403 FORBIDDEN", "text/plain", "Permission denied: " + path)
-    if path in ["/", "/index.html", "/form.html"]:
-        return serve_index()
-    if not os.path.isfile(file_path):
-        print("File not found!")
-        return HTTPResponse("404 NOT FOUND", "text/plain", "No such file: " + path)
-
+def serve_analysis(request_id):
     try:
-        with open(file_path, "rb") as f:
+        with open("web/analysis.html", "rb") as f:
             data = f.read()
+        listified_results = process_results()
+        datastring = data.decode()
+        datastring = datastring.format(hostname=gathered_results[request_id][self_host].target,
+                                       results=listified_results)
+        data = datastring.encode()
         return HTTPResponse("200 OK", "text/html", data)
     except:
         print("File read error!")
-        return HTTPResponse("403 FORBIDDEN", "text/plain", "Permission denied: " + path)
+        return HTTPResponse("403 FORBIDDEN", "text/plain", "Permission denied: web/analysis.html")
+
+    return serve_index()
 
 
 def serve_index():
@@ -348,6 +391,7 @@ def serve_index():
     all_nodes_listified = ""
     all_nodes_listified += "[*] %s via %s // %s // %s" % (self_host, cloud.provider, cloud.zone, cloud.city)
     all_nodes_listified += "\n"
+    request_ident()
     try:
         with open("web/form.html", "rb") as f:
             data = f.read()
