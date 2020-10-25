@@ -345,9 +345,12 @@ def serve_html_file(path):
                 analysis_target = s.split("=")[1]
                 break
         request_id = request_id_gen()
+        print("Request ID: " + request_id)
 
         current_jobs.append((request_id, analysis_target, self_host))
 
+        while not gathered_results[request_id][self_host]:
+            pass
         self_results = gathered_results[request_id][self_host]
         rtt = self_results.rtt
         size = self_results.size
