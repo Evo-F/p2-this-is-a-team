@@ -47,6 +47,7 @@ def request_id_gen():
 
 
 def process_results(job_id):
+    global gathered_results
     r_list = ""
     data = ""
     for host in gathered_results[job_id]:
