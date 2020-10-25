@@ -5,6 +5,7 @@ import random
 import cloud
 import threading
 import os
+import urllib
 
 http_port = 80
 proto_port = 9299
@@ -189,7 +190,6 @@ def handle_http_request(sock, client):
     print("Method: %s | Path: %s | Version: %s" % (req.method, req.path, req.version))
 
     if req.method == "GET":
-        req.path = "/form.html"
         resp = serve_html_file(req.path)
     else:
         resp = HTTPResponse("405 METHOD NOT ALLOWED")
@@ -222,6 +222,11 @@ def send_http_response(sock, resp, keepalive):
 
 
 def serve_html_file(path):
+    if path.startswith("/analyze"):
+        analysis_args = path.split("?", 1)
+        analysis_args = urllib.parse.unquote(analysis_args)
+        print(analysis_args)
+
     print("Serving HTTP file...")
 
     file_path = "./web" + path
