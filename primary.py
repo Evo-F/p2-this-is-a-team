@@ -156,8 +156,8 @@ def send_results(contact, results, id):
     message = "result\n"
     message += id + "\n"
     message += results.target + "\n"
-    message += results.rtt + "\n"
-    message += results.size + "\n"
+    message += str(results.rtt) + "\n"
+    message += str(results.size) + "\n"
     message += "eot"
     send_proto_message(message, contact)
 
@@ -282,8 +282,7 @@ def handle_proto_message(sock, client):
 
     if send_headcount is True:
         for kc in known_contacts:
-            if kc != client[0]:
-                send_proto_message("headcount\n%d\neot" % nodes_in_network, kc)
+            send_proto_message("headcount\n%d\neot" % nodes_in_network, kc)
 
 
 def handle_http_request(sock, client):
