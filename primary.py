@@ -49,12 +49,13 @@ def request_id_gen():
 def process_results(job_id):
     global gathered_results
     r_list = ""
-    data = ""
     for host in gathered_results[job_id]:
+        print("Getting some results...")
         res = gathered_results[job_id][host]
         data = "%s // RTT: %d // SIZE: %d" % (host, res.rtt, res.size)
         data += "\n"
         r_list += data
+    print("Done getting results!")
     return r_list
 
 
