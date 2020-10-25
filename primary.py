@@ -199,6 +199,11 @@ def send_http_response(sock, resp, keepalive):
         data += "Connection: keep-alive\r\n"
     else:
         data += "Connection: close\r\n"
+
+    print("Sending the following response:")
+    print("-----")
+    print(data)
+    print("-----")
     sock.sendall(data.encode())
     sock.sendall(resp.body)
 
