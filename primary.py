@@ -56,6 +56,15 @@ def send_hello(contact):
         known_contacts.append(contact)
 
 
+def send_ident_report(contact):
+    report = "report\n"
+    report += cloud.provider + "\n"
+    report += cloud.zone + "\n"
+    report += cloud.city + "\n"
+    report += "eot"
+    send_proto_message(report, contact)
+
+
 def send_proto_message(message, target):
     addr = (target, proto_port)
     s = socketutil.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -98,7 +107,7 @@ def handle_proto_message(sock, client):
         send_okay = False
 
     elif received_message.startswith("hello"):
-        if len(known_contacts) > nodes_in_network/2 and len(known_contacts) > 2:
+        if len(known_contacts)+1 > nodes_in_network+1/2 and len(known_contacts)+1 > 2:
             send_okay = False
             sock.sendall("contact\n%s\neot" % known_contacts[1])
         else:
@@ -122,6 +131,17 @@ def handle_proto_message(sock, client):
 
     elif received_message.startswith("contact"):
         send_hello(message_parts[1])
+
+    elif received_message.startswith("ident"):
+        for kc in known_contacts:
+            if kc != client[0]:
+                # propagate the message to all other known contacts!
+                send_proto_message(received_message+"eot", kc)
+        send_ident_report(message_parts[1])
+
+    elif received_message.startswith("report"):
+        print("NEW IDENTITY REPORT: %s via %s // %s // %s" % (client[0], message_parts[1],
+                                                              message_parts[2], message_parts[3]))
 
     if send_okay is True:
         sock.sendall("okay\neot")
@@ -213,5 +233,10 @@ while True:
         for so in known_contacts:
             print("- %s" % so)
         print("[[end listing]]")
+    elif user_input.startswith("ident"):
+        print("Retrieving identifying information...")
+        for so in known_contacts:
+            send_proto_message("ident\n%s\neot" % self_host, so)
+        print("Sent ident request, expect results shortly.")
 
 print("All known contacts notified. Node terminated.")
