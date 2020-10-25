@@ -237,11 +237,12 @@ def serve_html_file(path):
     if os.path.commonprefix([file_path, root_path]) != root_path:
         print("Path traversal attack!")
         return HTTPResponse("403 FORBIDDEN", "text/plain", "Permission denied: " + path)
+    if path in ["/", "/index.html", "/form.html"]:
+        return serve_index()
     if not os.path.isfile(file_path):
         print("File not found!")
         return HTTPResponse("404 NOT FOUND", "text/plain", "No such file: " + path)
-    if path in ["/", "/index.html", "/form.html"]:
-        return serve_index()
+
     try:
         with open(file_path, "rb") as f:
             data = f.read()
