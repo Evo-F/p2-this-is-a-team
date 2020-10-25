@@ -426,6 +426,7 @@ def serve_index():
             data = f.read()
 
         datastring = data.decode()
+        print(all_nodes_listified)
         datastring = datastring.format(currentserver=cloud.dnsname,
                                        servercount=nodes_in_network,
                                        serverlist=all_nodes_listified)
