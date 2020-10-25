@@ -40,10 +40,9 @@ class GeolocResults:
 
 
 def request_id_gen():
-    chars = "abcdefghijklmnopqrstuvwxyz1234567890"
     result = ""
     for i in range(8):
-        result.join(random.choice(chars))
+        result += str(random.randint(0, 9))
     return result
 
 
