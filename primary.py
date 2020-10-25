@@ -9,6 +9,7 @@ import os
 http_port = 80
 proto_port = 9299
 known_contacts = []
+all_nodes_listified = ""
 current_jobs = {}
 outsourced_jobs = {}
 nodes_in_network = 1
@@ -91,6 +92,11 @@ def send_proto_message(message, target):
         return False
 
 
+def request_ident():
+    for so in known_contacts:
+        send_proto_message("ident\n%s\neot" % self_host, so)
+
+
 def handle_proto_message(sock, client):
     received_message = sock.recv_str_until("eot")
     message_parts = received_message.splitlines()
@@ -141,8 +147,12 @@ def handle_proto_message(sock, client):
         send_ident_report(message_parts[1])
 
     elif received_message.startswith("report"):
+        global all_nodes_listified
         print("NEW IDENTITY REPORT: %s via %s // %s // %s" % (client[0], message_parts[1],
                                                               message_parts[2], message_parts[3]))
+        all_nodes_listified += "%s via %s // %s // %s" % (client[0], message_parts[1],
+                                                          message_parts[2], message_parts[3])
+        all_nodes_listified += "\n"
 
     if send_okay is True:
         sock.sendall("okay\neot")
@@ -237,12 +247,18 @@ def serve_html_file(path):
 
 
 def serve_index():
+    global all_nodes_listified
+    all_nodes_listified = ""
+    all_nodes_listified += "[*] %s via %s // %s // %s" % (self_host, cloud.provider, cloud.zone, cloud.city)
+    all_nodes_listified += "\n"
     try:
         with open("web/form.html", "rb") as f:
             data = f.read()
 
         datastring = data.decode()
-        datastring = datastring.format(currentserver=cloud.dnsname, servercount=nodes_in_network)
+        datastring = datastring.format(currentserver=cloud.dnsname,
+                                       servercount=nodes_in_network,
+                                       serverlist=all_nodes_listified)
         data = datastring.encode()
         return HTTPResponse("200 OK", "text/html", data)
     except:
