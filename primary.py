@@ -383,9 +383,12 @@ def serve_analysis(request_id):
     global self_host
     print("Attempting to serve analysis page...")
     try:
+        print("Trying to read file...")
         with open("web/analysis.html", "rb") as f:
             data = f.read()
+        print("File read! Processing results...")
         listified_results = process_results()
+        print("Processed results!")
         print(listified_results)
         datastring = data.decode()
         datastring = datastring.format(hostname=gathered_results[request_id][self_host].target,
