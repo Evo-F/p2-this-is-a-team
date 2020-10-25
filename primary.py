@@ -117,6 +117,8 @@ def parse_url_parts(url):
 
 
 def process_job():
+    global current_jobs
+
     while True:
         while not current_jobs:
             # spin until we have a job to do
