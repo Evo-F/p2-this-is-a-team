@@ -56,8 +56,9 @@ def process_specific_url(url):
 
     if parts[1].startswith("www."):
         parts[1] = parts[1].split(".", 1)[1]
-    addr = (parts[1], http_port)
+    addr = (socket.gethostbyname(parts[1]), http_port)
     print("Attempting to ping %s:%d" % (addr[0], addr[1]))
+
     target_url_sock = socketutil.socket(socket.AF_INET, socket.SOCK_STREAM)
     target_url_sock.settimeout(10)
     try:
