@@ -132,7 +132,7 @@ def process_job():
             res = GeolocResults(rtt, size)
             res.target = job[1]
 
-            if job[2].requester == self_host:
+            if job[2] == self_host:
                 # we just did our own job and got some results for it
                 gathered_results[job[0]][self_host] = res
             else:
