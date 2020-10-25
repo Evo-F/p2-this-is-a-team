@@ -172,6 +172,7 @@ def send_ident_report(contact):
 
 
 def send_proto_message(message, target):
+    global nodes_in_network
     addr = (target, proto_port)
     s = socketutil.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.settimeout(10)
@@ -186,7 +187,10 @@ def send_proto_message(message, target):
     try:
         while True:
             response = s.recv_str_until("eot")
+            response_lines = response.splitlines()
             if response.startswith("okay"):
+                if len(response_lines) > 1:
+                    nodes_in_network = int(response_lines[1])
                 break
             if response.startswith("contact"):
                 return False
@@ -213,6 +217,7 @@ def handle_proto_message(sock, client):
     print("-----")
     send_okay = True
     send_headcount = False
+    send_count_with_okay = False
     global nodes_in_network
 
     if received_message.startswith("okay"):
@@ -227,8 +232,8 @@ def handle_proto_message(sock, client):
             if client[0] not in known_contacts:
                 nodes_in_network += 1
                 send_headcount = True
+                send_count_with_okay = True
                 known_contacts.append(client[0])
-                send_proto_message("headcount\n%d\neot" % nodes_in_network, client[0])
 
     elif received_message.startswith("heartbeat"):
         print("Heard a heartbeat from %s!" % client[0])
@@ -278,7 +283,10 @@ def handle_proto_message(sock, client):
         current_jobs.append((job_id, target, requester))
 
     if send_okay is True:
-        sock.sendall("okay\neot")
+        if send_count_with_okay:
+            sock.sendall("okay\n%d\neot" % nodes_in_network)
+        else:
+            sock.sendall("okay\neot")
     sock.close()
 
     if send_headcount is True:
