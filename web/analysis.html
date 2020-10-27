@@ -4,9 +4,17 @@
   <h1>Simple URL Geolocation Service</h1>
   <h2>Query Results for {hostname}</h2>
 
-  <font color="blue">
-  <pre>{results}</pre>
-  </font>
+  <table style="width:50%">
+  <tr>
+    <th>Worker Name</th>
+    <th>Worker IP Address</th>
+    <th>Target IP Address</th>
+    <th>Ping (in ms)</th>
+    <th>Size of Webpage</th>
+    <th>Coordinates</th>
+  </tr>
+    {results}
+  </table>
 
   <p>
     <form action="/analyze" method="GET">

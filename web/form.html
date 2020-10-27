@@ -10,11 +10,18 @@
   <font color = blue><pre style="margin-left: 80px">{currentserver}</pre></font>
 
   <p>There are currently {servercount} active analysis and geolocation worker servers</p>
-  <p>The one you're currently using will be listed in red.</p>
 
-  <font color="blue">
-  <pre>{serverlist}</pre>
-  </font>
+  <table style="width:50%">
+  <tr>
+    <th>Worker Name</th>
+    <th>Worker IP Address</th>
+    <th>Worker Platform</th>
+    <th>Cloud Zone</th>
+    <th>Location</th>
+    <th>Coordinates</th>
+  </tr>
+    {serverlist}
+  </table>
 
   <p>
     <form action="/analyze" method="GET">
