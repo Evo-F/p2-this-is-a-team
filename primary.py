@@ -495,9 +495,8 @@ def serve_index():
         print("Server Count: %d" % (len(known_contacts)+1))
         print("Server List: (see above)")
         print(datastring)
-        datastring = datastring.format(currentserver=cloud.dnsname,
-                                       servercount=len(known_contacts)+1)
-        print("Finished formatting!")
+        # datastring = datastring.format(currentserver=cloud.dnsname, serverlist=all_nodes_listified,servercount=len(known_contacts)+1)
+        print("Would've finished formatting here!")
         data = datastring.encode()
         return HTTPResponse("200 OK", "text/html", data)
     except:
