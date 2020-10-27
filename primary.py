@@ -200,6 +200,7 @@ def send_results(contact, results, id):
     message += str(results.size) + "\n"
     message += str(results.worker_lat) + "\n"
     message += str(results.worker_long) + "\n"
+    message += cloud.dnsname + "\n"
     message += "eot"
     send_proto_message(message, contact)
 
