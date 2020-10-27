@@ -489,17 +489,12 @@ def serve_index():
             f.close()
 
         print("Finished listifying nodes!")
-        print(all_nodes_listified)
-        print("Cloud DNS Name: %s" % cloud.dnsname)
         num_servers = len(known_contacts) + 1
-        print("Server Count: %d" % num_servers)
 
-        print("Server List: (see above)")
-        print(data)
         datastring = data.format(currentserver=cloud.dnsname,
                                  servercount=num_servers,
                                  serverlist=all_nodes_listified)
-        print("Would've finished formatting here!")
+        print("Should've finished formatting here!")
         data = datastring.encode()
         return HTTPResponse("200 OK", "text/html", data)
     except Exception as e:
