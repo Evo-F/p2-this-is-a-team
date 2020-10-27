@@ -146,7 +146,7 @@ def parse_url_parts(url):
     # parts[0] is always http or https
     # parts[1] is the fully-qualified domain name (www.google.com)
     # parts[2] is the path (/index.html)
-    parts = []
+    parts = [3]
 
     if url.startswith("https://"):
         parts[0] = "https"
