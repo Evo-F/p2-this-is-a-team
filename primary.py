@@ -551,5 +551,6 @@ while True:
 
 for so in known_contacts:
     send_proto_message("goodbye\neot", so)
+save_hosts()
 print("All known contacts notified. Node terminated.")
 
