@@ -486,7 +486,7 @@ while True:
         print("Understood, terminating program...")
         break
     elif user_input.startswith("count"):
-        print("There are currently [%d] nodes in the network." % len(known_contacts)+1)
+        print("There are currently [%d] nodes in the network." % str(len(known_contacts)+1))
     elif user_input.startswith("heartbeat"):
         print("Sending a heartbeat to all known contacts...")
         for so in known_contacts:
