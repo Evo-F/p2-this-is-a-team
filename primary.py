@@ -459,11 +459,14 @@ def serve_index():
     global all_nodes_listified
     global known_contacts
     all_nodes_listified = ""
-    all_nodes_listified += "<font color=\"red\">%s via %s // %s // %s (%s, %s)</font>" % (self_host, cloud.provider,
-                                                                                          cloud.zone, cloud.city,
-                                                                                          str(cloud.coords[0]),
-                                                                                          str(cloud.coords[1]))
-    all_nodes_listified += "\n"
+    all_nodes_listified += "<tr>"
+    all_nodes_listified += "<td>%s</td>" % cloud.dnsname
+    all_nodes_listified += "<td>%s</td>" % self_host
+    all_nodes_listified += "<td>%s</td>" % cloud.provider
+    all_nodes_listified += "<td>%s</td>" % cloud.zone
+    all_nodes_listified += "<td>%s</td>" % cloud.city
+    all_nodes_listified += "<td>%s, %s</td>" % (cloud.coords[0], cloud.coords[1])
+    all_nodes_listified += "</tr>\n"
     request_ident()
     try:
         with open("web/form.html", "rb") as f:
