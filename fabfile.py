@@ -40,9 +40,6 @@ env.key_filename = '~/.ssh/cloud_sshkey'
 with open("node_record.txt", "r") as f:
     env.hosts = f.read().splitlines()
 
-# This is the host designated as the central coordator. Pick whichever server
-# from all_hosts you like here. By default, just take the first one.
-
 
 # The deploy task copies all python files from local directory to every host.
 # If you want to copy other files, you can modify this, or make a separate task
@@ -50,6 +47,7 @@ with open("node_record.txt", "r") as f:
 def deploy():
     run('mkdir -p ~/geoloc-core/web/')
     put('*.py', '~/geoloc-core/')
+    put('node_record.txt', '~/geoloc-core/')
     put('./web/*.html', '~/geoloc-core/web/')
 
 
