@@ -489,6 +489,7 @@ def serve_index():
             f.close()
 
         datastring = data.decode()
+        print("Finished listifying nodes!")
         print(all_nodes_listified)
         datastring = datastring.format(currentserver=cloud.dnsname,
                                        servercount=str(len(known_contacts)+1),
