@@ -6,10 +6,9 @@ Types of requests are as follows:
 - request (used for propagating a URL trace request from a user)
 - result (used for designating results from a previous URL trace request)
 - goodbye (used for removing nodes from the network)
-- contact (used for telling Node A to establish a connection with Node B, also functions like an OKAY)
+- contact (used for telling Node A to establish a connection with Node B)
 - okay (used for acknowledging certain request types)
 - heartbeat (used for testing only, to acknowledge a node's presence)
-- headcount (used to signify how many nodes are in the network, including the new node if applicable)
 - ident (used to request identifying details from each node, to be sent to one node currently serving a webpage)
 - report (declares response to an ident query)
 
@@ -43,10 +42,6 @@ SAMPLE REQUEST BODIES:
 - heartbeat
 - eot
 
-- headcount
-- [number of nodes in the network]
-- eot
-
 - ident
 - [node making the request] //send results to this node!
 - eot
@@ -55,4 +50,6 @@ SAMPLE REQUEST BODIES:
 - [cloud provider]
 - [zone]
 - [city]
+- [reporter latitude]
+- [reporter longitude]
 - eot
