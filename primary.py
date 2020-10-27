@@ -273,6 +273,8 @@ def handle_proto_message(sock, client):
     message_parts = received_message.splitlines()
 
     new_contact = False
+    process_report = False
+    process_result = False
     send_ident = False
     send_okay = True
 
@@ -308,6 +310,34 @@ def handle_proto_message(sock, client):
 
     elif received_message.startswith("report"):
         global all_nodes_listified
+        process_report = True
+
+    elif received_message.startswith("result"):
+        process_result = True
+
+    elif received_message.startswith("request"):
+        job_id = message_parts[1]
+        target = message_parts[2]
+        requester = message_parts[3]
+        current_jobs.append((job_id, target, requester))
+
+    if send_okay:
+        sock.sendall("okay\neot")
+    sock.close()
+
+    # All below clauses are situational.
+    # The node prioritizes acknowledgment before actually acting on the message it received.
+    # This is to prevent erroneous timeouts and re-sends.
+
+    if new_contact:
+        for kc in known_contacts:
+            if kc != client[0]:
+                send_proto_message("contact\n%s\neot" % client[0], kc)
+
+    if send_ident:
+        send_ident_report(message_parts[1])
+
+    if process_report:
         print("NEW IDENTITY REPORT: %s via %s // %s // %s" % (client[0], message_parts[1],
                                                               message_parts[2], message_parts[3]))
         ident_report = "<tr>"
@@ -320,7 +350,7 @@ def handle_proto_message(sock, client):
         ident_report += "</tr>\n"
         all_nodes_listified += ident_report
 
-    elif received_message.startswith("result"):
+    if process_result:
         job_id = message_parts[1]
         reported_rtt = float(message_parts[3])
         reported_size = int(message_parts[4])
@@ -331,24 +361,6 @@ def handle_proto_message(sock, client):
         res.worker_long = message_parts[6]
         res.worker_name = message_parts[7]
         gathered_results[job_id][reporting_node] = res
-
-    elif received_message.startswith("request"):
-        job_id = message_parts[1]
-        target = message_parts[2]
-        requester = message_parts[3]
-        current_jobs.append((job_id, target, requester))
-
-    if send_okay:
-        sock.sendall("okay\neot")
-    sock.close()
-
-    if new_contact:
-        for kc in known_contacts:
-            if kc != client[0]:
-                send_proto_message("contact\n%s\neot" % client[0], kc)
-
-    if send_ident:
-        send_ident_report(message_parts[1])
 
 
 def handle_http_request(sock, client):
