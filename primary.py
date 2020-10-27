@@ -283,7 +283,7 @@ def handle_proto_message(sock, client):
         global all_nodes_listified
         print("NEW IDENTITY REPORT: %s via %s // %s // %s" % (client[0], message_parts[1],
                                                               message_parts[2], message_parts[3]))
-        all_nodes_listified += "[ ] %s via %s // %s // %s (%s, %s)" % (client[0], message_parts[1], message_parts[2],
+        all_nodes_listified += "%s via %s // %s // %s (%s, %s)" % (client[0], message_parts[1], message_parts[2],
                                                                        message_parts[3], message_parts[4],
                                                                        message_parts[5])
         all_nodes_listified += "\n"
@@ -441,7 +441,7 @@ def serve_index():
     global all_nodes_listified
     global known_contacts
     all_nodes_listified = ""
-    all_nodes_listified += "[*] %s via %s // %s // %s (%s, %s)" % (self_host, cloud.provider, cloud.zone, cloud.city,
+    all_nodes_listified += "<font color=\"red\">%s via %s // %s // %s (%s, %s)</font>" % (self_host, cloud.provider, cloud.zone, cloud.city,
                                                                    str(cloud.coords[0]), str(cloud.coords[1]))
     all_nodes_listified += "\n"
     request_ident()
