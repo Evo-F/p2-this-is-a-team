@@ -206,8 +206,13 @@ def send_proto_message(message, target):
 
 
 def request_ident():
+    global all_nodes_listified
+    global known_contacts
     for kc in known_contacts:
         send_proto_message("ident\n%s\neot" % self_host, kc)
+
+    while len(all_nodes_listified.splitlines()) < (len(known_contacts)+1):
+        pass
 
 
 def handle_proto_message(sock, client):
