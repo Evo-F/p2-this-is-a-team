@@ -211,10 +211,10 @@ def send_proto_message(message, target):
     try:
         s.connect(addr)
     except:
-        print("ERROR: Attempted to open socket to target %s:%d, but it did not respond!" % (target, proto_port))
+        print("[CONN] ERROR Attempted to open socket to target %s:%d, but it did not respond!" % (target, proto_port))
         return False
 
-    print("CONNECTION ESTABLISHED: %s:%d" % (target, proto_port))
+    print("[CONN] SUCCESS %s:%d" % (target, proto_port))
     s.sendall(message)
 
     try:
@@ -226,7 +226,7 @@ def send_proto_message(message, target):
         s.close()
         return True
     except:
-        print("ERROR: Other node did not send a response in time!")
+        print("[CONN] ERROR Other node did not send a response in time!")
         return False
 
 
