@@ -258,6 +258,7 @@ def send_proto_message(message, target):
 
 
 def request_ident():
+    print("Requesting identification from all nodes...")
     global all_nodes_listified
     global known_contacts
     for kc in known_contacts:
@@ -265,6 +266,7 @@ def request_ident():
 
     while len(all_nodes_listified.splitlines()) < (len(known_contacts)+1):
         pass
+    print("Identification received from all nodes!")
 
 
 def handle_proto_message(sock, client):
@@ -309,7 +311,6 @@ def handle_proto_message(sock, client):
         send_ident = True
 
     elif received_message.startswith("report"):
-        global all_nodes_listified
         process_report = True
 
     elif received_message.startswith("result"):
@@ -338,6 +339,7 @@ def handle_proto_message(sock, client):
         send_ident_report(message_parts[1])
 
     if process_report:
+        global all_nodes_listified
         print("NEW IDENTITY REPORT: %s via %s // %s // %s" % (client[0], message_parts[1],
                                                               message_parts[2], message_parts[3]))
         ident_report = "<tr>"
@@ -513,15 +515,17 @@ def serve_index():
     all_nodes_listified += "</tr>\n"
     request_ident()
     try:
-        with open("web/form.html", "r") as f:
+        with open("web/form.html", "rb") as f:
             data = f.read()
             f.close()
         print("Finished listifying nodes!")
         num_servers = len(known_contacts) + 1
 
+        data = data.decode()
         data = data.format(currentserver=cloud.dnsname,
                            servercount=num_servers,
                            serverlist=all_nodes_listified)
+        data.encode()
         print("Should've finished formatting here!")
         return HTTPResponse("200 OK", "text/html", data)
     except Exception as e:
