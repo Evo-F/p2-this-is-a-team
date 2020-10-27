@@ -462,8 +462,9 @@ def serve_html_file(path):
 
     else:
         try:
-            with open("web"+path, "r") as f:
+            with open("web"+path, "rb") as f:
                 data = f.read()
+                f.close()
             if path.endswith("html") or path.endswith("htm"):
                 return HTTPResponse("200 OK", "text/html", data)
             elif path.endswith(".css"):
@@ -481,6 +482,7 @@ def serve_analysis(request_id, analysis_target):
         print("Trying to read file...")
         with open("web/analysis.html", "rb") as f:
             data = f.read()
+            f.close()
         print("File read! Processing results...")
         listified_results = process_results(request_id)
         print("Processed results!")
@@ -514,7 +516,6 @@ def serve_index():
         with open("web/form.html", "r") as f:
             data = f.read()
             f.close()
-
         print("Finished listifying nodes!")
         num_servers = len(known_contacts) + 1
 
