@@ -214,6 +214,7 @@ def send_proto_message(message, target):
         print("ERROR: Attempted to open socket to target %s:%d, but it did not respond!" % (target, proto_port))
         return False
 
+    print("CONNECTION ESTABLISHED: %s:%d" % (target, proto_port))
     s.sendall(message)
 
     try:
