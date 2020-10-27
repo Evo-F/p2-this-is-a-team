@@ -173,7 +173,7 @@ def process_job():
             res.worker_lat = cloud.coords[0]
             res.worker_long = cloud.coords[1]
             res.target = target_ip
-            res.worker_name = self_host
+            res.worker_name = cloud.dnsname
 
             if job[2] == self_host:
                 # we just did our own job and got some results for it
