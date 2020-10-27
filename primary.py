@@ -214,6 +214,7 @@ def handle_proto_message(sock, client):
     global known_contacts
     received_message = sock.recv_str_until("eot")
     message_parts = received_message.splitlines()
+    new_contact = False
     print("Received new message from %s via port %d // message text follows:" % (client[0], client[1]))
     print("-----")
     for s in message_parts:
@@ -227,9 +228,7 @@ def handle_proto_message(sock, client):
     elif received_message.startswith("hello"):
         if client[0] not in known_contacts:
             known_contacts.append(client[0])
-            for kc in known_contacts:
-                if kc != client[0]:
-                    send_proto_message("contact\n%s\neot" % client[0], kc)
+            new_contact = True
 
     elif received_message.startswith("heartbeat"):
         print("Heard a heartbeat from %s!" % client[0])
@@ -239,7 +238,8 @@ def handle_proto_message(sock, client):
             known_contacts.remove(client[0])
 
     elif received_message.startswith("contact"):
-        send_hello(message_parts[1])
+        if message_parts[1] not in known_contacts:
+            send_hello(message_parts[1])
 
     elif received_message.startswith("ident"):
         send_ident_report(message_parts[1])
@@ -272,6 +272,11 @@ def handle_proto_message(sock, client):
 
     sock.sendall("okay\neot")
     sock.close()
+
+    if new_contact:
+        for kc in known_contacts:
+            if kc != client[0]:
+                send_proto_message("contact\n%s\neot" % client[0], kc)
 
 
 def handle_http_request(sock, client):
