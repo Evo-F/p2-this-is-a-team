@@ -48,11 +48,14 @@ def request_id_gen():
 
 
 def attempt_connection():
+    global self_host
     with open("node_record.txt", "r") as f:
         data = f.read()
         f.close()
     hosts = data.splitlines()
     for hn in hosts:
+        if hn == self_host:
+            pass
         if send_hello(hn):
             print("Living contact found: %s" % hn)
             break
@@ -173,6 +176,7 @@ def process_job():
 def send_hello(contact):
     if send_proto_message("hello\neot", contact):
         known_contacts.append(contact)
+        save_hosts()
         return True
     return False
 
@@ -215,7 +219,6 @@ def send_proto_message(message, target):
     try:
         while True:
             response = s.recv_str_until("eot")
-            response_lines = response.splitlines()
             if response.startswith("okay"):
                 break
             s.sendall(message)
@@ -266,6 +269,7 @@ def handle_proto_message(sock, client):
     elif received_message.startswith("goodbye"):
         if client[0] in known_contacts:
             known_contacts.remove(client[0])
+            save_hosts()
 
     elif received_message.startswith("contact"):
         if message_parts[1] not in known_contacts:
@@ -393,7 +397,7 @@ def serve_html_file(path):
 
         message = "request\n"
         message += request_id + "\n"
-        message += analysis_target +"\n"
+        message += analysis_target + "\n"
         message += self_host + "\n"
         message += "eot"
 
