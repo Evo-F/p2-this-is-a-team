@@ -486,12 +486,14 @@ def serve_index():
     try:
         with open("web/form.html", "rb") as f:
             data = f.read()
+            f.close()
 
         datastring = data.decode()
         print(all_nodes_listified)
         datastring = datastring.format(currentserver=cloud.dnsname,
-                                       servercount=len(known_contacts)+1,
+                                       servercount=str(len(known_contacts)+1),
                                        serverlist=all_nodes_listified)
+        print("Finished formatting!")
         data = datastring.encode()
         return HTTPResponse("200 OK", "text/html", data)
     except:
