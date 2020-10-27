@@ -488,7 +488,6 @@ def serve_index():
             data = f.read()
             f.close()
 
-        datastring = ""
         print("Finished listifying nodes!")
         print(all_nodes_listified)
         print("Cloud DNS Name: %s" % cloud.dnsname)
@@ -496,15 +495,15 @@ def serve_index():
         print("Server Count: %d" % num_servers)
 
         print("Server List: (see above)")
-        print(datastring)
         datastring = data.format(currentserver=cloud.dnsname,
                                  servercount=num_servers,
                                  serverlist=all_nodes_listified)
         print("Would've finished formatting here!")
         data = datastring.encode()
         return HTTPResponse("200 OK", "text/html", data)
-    except:
+    except Exception as e:
         print("File read error!")
+        print(e)
         return HTTPResponse("403 FORBIDDEN", "text/plain", "Permission denied: web/form.html")
 
 
