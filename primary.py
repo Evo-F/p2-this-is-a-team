@@ -488,12 +488,13 @@ def serve_index():
             data = f.read()
             f.close()
 
-        datastring = data
+        datastring = ""
         print("Finished listifying nodes!")
         print(all_nodes_listified)
         print("Cloud DNS Name: %s" % cloud.dnsname)
-        print("Server Count: %d" % (len(known_contacts)+1))
-        num_servers = len(known_contacts)+1
+        num_servers = len(known_contacts) + 1
+        print("Server Count: %d" % num_servers)
+
         print("Server List: (see above)")
         print(datastring)
         datastring = data.format(currentserver=cloud.dnsname,
