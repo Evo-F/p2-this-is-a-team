@@ -12,7 +12,6 @@ known_contacts = []
 all_nodes_listified = ""
 current_jobs = []
 gathered_results = {}
-nodes_in_network = 1
 
 
 class HTTPRequest:
@@ -37,6 +36,8 @@ class GeolocResults:
         self.target = ""
         self.rtt = rtt
         self.size = size
+        self.worker_lat = ""
+        self.worker_long = ""
 
 
 def request_id_gen():
@@ -54,7 +55,8 @@ def process_results(job_id):
     for host in gathered_results[job_id]:
         print("Getting some results...")
         res = gathered_results[job_id][host]
-        data = "%s // RTT: %d // SIZE: %d" % (host, res.rtt, res.size)
+        data = "%s // RTT: %d // SIZE: %d // LAT: %s // LONG: %s" % (host, res.rtt, res.size,
+                                                                     res.worker_lat, res.worker_long)
         data += "\n"
         r_list += data
     print("Done getting results!")
@@ -135,6 +137,8 @@ def process_job():
 
             print("RTT: %d, SIZE: %d" % (rtt, size))
             res = GeolocResults(rtt, size)
+            res.worker_lat = cloud.coords[0]
+            res.worker_long = cloud.coords[1]
             res.target = job[1]
 
             if job[2] == self_host:
@@ -158,6 +162,8 @@ def send_results(contact, results, id):
     message += results.target + "\n"
     message += str(results.rtt) + "\n"
     message += str(results.size) + "\n"
+    message += results.worker_lat + "\n"
+    message += results.worker_long + "\n"
     message += "eot"
     send_proto_message(message, contact)
 
@@ -167,12 +173,13 @@ def send_ident_report(contact):
     report += cloud.provider + "\n"
     report += cloud.zone + "\n"
     report += cloud.city + "\n"
+    report += cloud.coords[0] + "\n"
+    report += cloud.coords[1] + "\n"
     report += "eot"
     send_proto_message(report, contact)
 
 
 def send_proto_message(message, target):
-    global nodes_in_network
     addr = (target, proto_port)
     s = socketutil.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.settimeout(10)
@@ -189,11 +196,7 @@ def send_proto_message(message, target):
             response = s.recv_str_until("eot")
             response_lines = response.splitlines()
             if response.startswith("okay"):
-                if len(response_lines) > 1:
-                    nodes_in_network = int(response_lines[1])
                 break
-            if response.startswith("contact"):
-                return False
             s.sendall(message)
         s.close()
         return True
@@ -203,11 +206,12 @@ def send_proto_message(message, target):
 
 
 def request_ident():
-    for so in known_contacts:
-        send_proto_message("ident\n%s\neot" % self_host, so)
+    for kc in known_contacts:
+        send_proto_message("ident\n%s\neot" % self_host, kc)
 
 
 def handle_proto_message(sock, client):
+    global known_contacts
     received_message = sock.recv_str_until("eot")
     message_parts = received_message.splitlines()
     print("Received new message from %s via port %d // message text follows:" % (client[0], client[1]))
@@ -215,25 +219,17 @@ def handle_proto_message(sock, client):
     for s in message_parts:
         print(s)
     print("-----")
-    send_okay = True
-    send_headcount = False
-    send_count_with_okay = False
-    global nodes_in_network
 
     if received_message.startswith("okay"):
         # prevents infinite loops of okay responses
         send_okay = False
 
     elif received_message.startswith("hello"):
-        if len(known_contacts)+1 > nodes_in_network+1/2 and len(known_contacts)+1 > 2:
-            send_okay = False
-            sock.sendall("contact\n%s\neot" % known_contacts[1])
-        else:
-            if client[0] not in known_contacts:
-                nodes_in_network += 1
-                send_headcount = True
-                send_count_with_okay = True
-                known_contacts.append(client[0])
+        if client[0] not in known_contacts:
+            known_contacts.append(client[0])
+            for kc in known_contacts:
+                if kc != client[0]:
+                    send_proto_message("contact\n%s\neot" % client[0], kc)
 
     elif received_message.startswith("heartbeat"):
         print("Heard a heartbeat from %s!" % client[0])
@@ -241,30 +237,20 @@ def handle_proto_message(sock, client):
     elif received_message.startswith("goodbye"):
         if client[0] in known_contacts:
             known_contacts.remove(client[0])
-            nodes_in_network -= 1
-            send_headcount = True
-
-    elif received_message.startswith("headcount"):
-        nodes_in_network = int(message_parts[1])
-        send_headcount = True
-        print("Adjusted headcount is now: %d" % nodes_in_network)
 
     elif received_message.startswith("contact"):
         send_hello(message_parts[1])
 
     elif received_message.startswith("ident"):
-        for kc in known_contacts:
-            if kc != client[0]:
-                # propagate the message to all other known contacts!
-                send_proto_message(received_message+"eot", kc)
         send_ident_report(message_parts[1])
 
     elif received_message.startswith("report"):
         global all_nodes_listified
         print("NEW IDENTITY REPORT: %s via %s // %s // %s" % (client[0], message_parts[1],
                                                               message_parts[2], message_parts[3]))
-        all_nodes_listified += "%s via %s // %s // %s" % (client[0], message_parts[1],
-                                                          message_parts[2], message_parts[3])
+        all_nodes_listified += "[ ] %s via %s // %s // %s (%s, %s)" % (client[0], message_parts[1], message_parts[2],
+                                                                       message_parts[3], message_parts[4],
+                                                                       message_parts[5])
         all_nodes_listified += "\n"
 
     elif received_message.startswith("result"):
@@ -274,6 +260,8 @@ def handle_proto_message(sock, client):
         reporting_node = client[0]
         res = GeolocResults(reported_rtt, reported_size)
         res.target = message_parts[2]
+        res.worker_lat = message_parts[5]
+        res.worker_long = message_parts[6]
         gathered_results[job_id][reporting_node] = res
 
     elif received_message.startswith("request"):
@@ -282,17 +270,8 @@ def handle_proto_message(sock, client):
         requester = message_parts[3]
         current_jobs.append((job_id, target, requester))
 
-    if send_okay is True:
-        if send_count_with_okay:
-            sock.sendall("okay\n%d\neot" % nodes_in_network)
-        else:
-            sock.sendall("okay\neot")
+    sock.sendall("okay\neot")
     sock.close()
-
-    if send_headcount is True:
-        for kc in known_contacts:
-            if kc != client[0]:
-                send_proto_message("headcount\n%d\neot" % nodes_in_network, kc)
 
 
 def handle_http_request(sock, client):
@@ -354,7 +333,6 @@ def send_http_response(sock, resp, keepalive):
 
 def serve_html_file(path):
     global gathered_results
-    global nodes_in_network
     if path.startswith("/analyze"):
         analysis_args = path.split("?", 1)[1]
         analysis_args = urllib.parse.unquote(analysis_args)
@@ -384,7 +362,7 @@ def serve_html_file(path):
             send_proto_message(message, kc)
 
         print("Waiting for results...")
-        while len(gathered_results[request_id]) < nodes_in_network:
+        while len(gathered_results[request_id]) < len(known_contacts)+1:
             pass
         print("All results are in (%d)!" % len(gathered_results[request_id]))
         return serve_analysis(request_id)
@@ -417,6 +395,7 @@ def serve_analysis(request_id):
 
 def serve_index():
     global all_nodes_listified
+    global known_contacts
     all_nodes_listified = ""
     all_nodes_listified += "[*] %s via %s // %s // %s" % (self_host, cloud.provider, cloud.zone, cloud.city)
     all_nodes_listified += "\n"
@@ -428,7 +407,7 @@ def serve_index():
         datastring = data.decode()
         print(all_nodes_listified)
         datastring = datastring.format(currentserver=cloud.dnsname,
-                                       servercount=nodes_in_network,
+                                       servercount=len(known_contacts)+1,
                                        serverlist=all_nodes_listified)
         data = datastring.encode()
         return HTTPResponse("200 OK", "text/html", data)
@@ -505,11 +484,9 @@ while True:
     user_input = input()
     if user_input.startswith("quit"):
         print("Understood, terminating program...")
-        for so in known_contacts:
-            send_proto_message("goodbye\neot", so)
         break
     elif user_input.startswith("count"):
-        print("There are currently [%d] nodes in the network." % nodes_in_network)
+        print("There are currently [%d] nodes in the network." % len(known_contacts))
     elif user_input.startswith("heartbeat"):
         print("Sending a heartbeat to all known contacts...")
         for so in known_contacts:
@@ -526,5 +503,7 @@ while True:
             send_proto_message("ident\n%s\neot" % self_host, so)
         print("Sent ident request, expect results shortly.")
 
+for so in known_contacts:
+    send_proto_message("goodbye\neot", so)
 print("All known contacts notified. Node terminated.")
 

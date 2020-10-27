@@ -27,6 +27,8 @@ SAMPLE REQUEST BODIES:
 - [target URL]
 - [RTT]
 - [size]
+- [worker lat]
+- [worker long]
 - eot
 
 - goodbye
