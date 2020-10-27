@@ -24,11 +24,12 @@ SAMPLE REQUEST BODIES:
 
 - result
 - [request ID]
-- [target URL]
+- [target IP]
 - [RTT]
 - [size]
 - [worker lat]
 - [worker long]
+- [worker name]
 - eot
 
 - goodbye
@@ -50,6 +51,7 @@ SAMPLE REQUEST BODIES:
 
 - report
 - [cloud provider]
+- [cloud dns name]
 - [zone]
 - [city]
 - [reporter latitude]
