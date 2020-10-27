@@ -146,12 +146,12 @@ def parse_url_parts(url):
     # parts[0] is always http or https
     # parts[1] is the fully-qualified domain name (www.google.com)
     # parts[2] is the path (/index.html)
-    parts = [3]
+    parts = []
 
     if url.startswith("https://"):
-        parts[0] = "https"
+        parts.append("https")
     else:
-        parts[0] = "http"
+        parts.append("http")
 
     if url.startswith("https://"):
         url = url[8:]
@@ -159,11 +159,11 @@ def parse_url_parts(url):
         url = url[7:]
 
     split_url = url.split("/", 1)
-    parts[1] = split_url[0]
+    parts.append(split_url[0])
     if len(split_url) == 1:
-        parts[2] = "/"
+        parts.append("/")
     else:
-        parts[2] = "/" + split_url[1]
+        parts.append("/" + split_url[1])
 
     return parts
 
