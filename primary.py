@@ -207,7 +207,7 @@ def send_ident_report(contact):
 def send_proto_message(message, target):
     addr = (target, proto_port)
     s = socketutil.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.settimeout(10)
+    s.settimeout(1)
     try:
         s.connect(addr)
     except socket.timeout:
