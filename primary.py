@@ -143,15 +143,28 @@ def process_specific_url(url):
 
 
 def parse_url_parts(url):
+    # parts[0] is always http or https
+    # parts[1] is the fully-qualified domain name (www.google.com)
+    # parts[2] is the path (/index.html)
     parts = []
-    url_prot_rem = url.split("://")
-    parts.append(url_prot_rem[0])
-    url_path_rem = url_prot_rem[1].split("/", 1)
-    parts.append(url_path_rem[0])
-    if len(url_path_rem) < 2:
-        parts.append("/")
+
+    if url.startswith("https://"):
+        parts[0] = "https"
     else:
-        parts.append("/"+url_path_rem[1])
+        parts[0] = "http"
+
+    if url.startswith("https://"):
+        url = url[8:]
+    elif url.startswith("http://"):
+        url = url[7:]
+
+    split_url = url.split("/", 1)
+    parts[1] = split_url[0]
+    if len(split_url) == 1:
+        parts[2] = "/"
+    else:
+        parts[2] = "/" + split_url[1]
+
     return parts
 
 
