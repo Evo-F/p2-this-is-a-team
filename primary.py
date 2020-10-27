@@ -38,6 +38,7 @@ class GeolocResults:
         self.size = size
         self.worker_lat = ""
         self.worker_long = ""
+        self.worker_name = ""
 
 
 def request_id_gen():
@@ -78,12 +79,18 @@ def process_results(job_id):
     r_list = ""
     print("Starting to process results!")
     print(gathered_results[job_id].items())
+
     for host in gathered_results[job_id]:
         print("Getting some results...")
         res = gathered_results[job_id][host]
-        data = "%s // RTT: %d // SIZE: %d // LAT: %s // LONG: %s" % (host, res.rtt, res.size,
-                                                                     res.worker_lat, res.worker_long)
-        data += "\n"
+        data = "<tr>"
+        data += "<td>%s</td>" % res.worker_name
+        data += "<td>%s</td>" % host
+        data += "<td>%s</td>" % res.target
+        data += "<td>%f</td>" % res.rtt
+        data += "<td>%d</td>" % res.size
+        data += "<td>%s, %s</td>" % (res.worker_lat, res.worker_long)
+        data += "</tr>\n"
         r_list += data
     print("Done getting results!")
     return r_list
@@ -121,10 +128,10 @@ def process_specific_url(url):
         return -1, -1
 
     duration = endtime - starttime
-    duration = duration * 1000
+    duration = duration * 1000.0
     print("Duration: %dms" % duration)
     response_lines = response.split("\r\n")
-    size = 0;
+    size = -1
     for line in response_lines:
         if line.startswith("Content-Length:"):
             size = int(line.split(": ", 1)[1])
@@ -132,7 +139,7 @@ def process_specific_url(url):
         if line == "Transfer-Encoding: chunked":
             size = -1
             break
-    return duration, size
+    return duration, size, addr[0]
 
 
 def parse_url_parts(url):
@@ -159,13 +166,13 @@ def process_job():
             pass
         for job in current_jobs:
             print("Began new job!")
-            rtt, size = process_specific_url(job[1])
+            rtt, size, target_ip = process_specific_url(job[1])
 
             print("RTT: %d, SIZE: %d" % (rtt, size))
             res = GeolocResults(rtt, size)
             res.worker_lat = cloud.coords[0]
             res.worker_long = cloud.coords[1]
-            res.target = job[1]
+            res.target = target_ip
 
             if job[2] == self_host:
                 # we just did our own job and got some results for it
@@ -200,6 +207,7 @@ def send_results(contact, results, id):
 def send_ident_report(contact):
     report = "report\n"
     report += cloud.provider + "\n"
+    report += cloud.dnsname + "\n"
     report += cloud.zone + "\n"
     report += cloud.city + "\n"
     report += str(cloud.coords[0]) + "\n"
@@ -287,10 +295,15 @@ def handle_proto_message(sock, client):
         global all_nodes_listified
         print("NEW IDENTITY REPORT: %s via %s // %s // %s" % (client[0], message_parts[1],
                                                               message_parts[2], message_parts[3]))
-        all_nodes_listified += "%s via %s // %s // %s (%s, %s)" % (client[0], message_parts[1], message_parts[2],
-                                                                       message_parts[3], message_parts[4],
-                                                                       message_parts[5])
-        all_nodes_listified += "\n"
+        ident_report = "<tr>"
+        ident_report += "<td>%s</td>" % message_parts[2]
+        ident_report += "<td>%s</td>" % client[0]
+        ident_report += "<td>%s</td>" % message_parts[1]
+        ident_report += "<td>%s</td>" % message_parts[3]
+        ident_report += "<td>%s</td>" % message_parts[4]
+        ident_report += "<td>%s, %s</td>" % (message_parts[5], message_parts[6])
+        ident_report += "</tr>\n"
+        all_nodes_listified += ident_report
 
     elif received_message.startswith("result"):
         job_id = message_parts[1]
@@ -301,6 +314,7 @@ def handle_proto_message(sock, client):
         res.target = message_parts[2]
         res.worker_lat = message_parts[5]
         res.worker_long = message_parts[6]
+        res.worker_name = message_parts[7]
         gathered_results[job_id][reporting_node] = res
 
     elif received_message.startswith("request"):
@@ -413,12 +427,12 @@ def serve_html_file(path):
         while len(gathered_results[request_id]) < len(known_contacts)+1:
             pass
         print("All results are in (%d)!" % len(gathered_results[request_id]))
-        return serve_analysis(request_id)
+        return serve_analysis(request_id, analysis_target)
 
     return serve_index()
 
 
-def serve_analysis(request_id):
+def serve_analysis(request_id, analysis_target):
     global self_host
     print("Attempting to serve analysis page...")
     try:
@@ -430,7 +444,7 @@ def serve_analysis(request_id):
         print("Processed results!")
         print(listified_results)
         datastring = data.decode()
-        datastring = datastring.format(hostname=gathered_results[request_id][self_host].target,
+        datastring = datastring.format(hostname=analysis_target,
                                        results=listified_results)
         data = datastring.encode()
         return HTTPResponse("200 OK", "text/html", data)
@@ -445,8 +459,10 @@ def serve_index():
     global all_nodes_listified
     global known_contacts
     all_nodes_listified = ""
-    all_nodes_listified += "<font color=\"red\">%s via %s // %s // %s (%s, %s)</font>" % (self_host, cloud.provider, cloud.zone, cloud.city,
-                                                                   str(cloud.coords[0]), str(cloud.coords[1]))
+    all_nodes_listified += "<font color=\"red\">%s via %s // %s // %s (%s, %s)</font>" % (self_host, cloud.provider,
+                                                                                          cloud.zone, cloud.city,
+                                                                                          str(cloud.coords[0]),
+                                                                                          str(cloud.coords[1]))
     all_nodes_listified += "\n"
     request_ident()
     try:
