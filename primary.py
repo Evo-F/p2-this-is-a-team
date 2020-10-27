@@ -495,8 +495,7 @@ def serve_index():
         print("Server Count: %d" % (len(known_contacts)+1))
         print("Server List: (see above)")
         print(datastring)
-        datastring = datastring.format(servercount=(len(known_contacts)+1),
-                                       serverlist=all_nodes_listified)
+        datastring = datastring.format(serverlist=all_nodes_listified)
         print("Finished formatting!")
         data = datastring.encode()
         return HTTPResponse("200 OK", "text/html", data)
