@@ -407,10 +407,8 @@ def send_http_response(sock, resp, keepalive):
 
     data += "Content-Type: " + resp.mime_type + "\r\n"
     data += "Content-Length: " + str(len(resp.body)) + "\r\n"
-    if keepalive is True:
-        data += "Connection: keep-alive\r\n"
-    else:
-        data += "Connection: close\r\n"
+    data += "Connection: close\r\n"
+
     data += "\r\n"
 
     print("Sending the following response:")
