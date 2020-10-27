@@ -210,7 +210,7 @@ def send_proto_message(message, target):
     s.settimeout(1)
     try:
         s.connect(addr)
-    except socket.timeout:
+    except:
         print("ERROR: Attempted to open socket to target %s:%d, but it did not respond!" % (target, proto_port))
         return False
 
@@ -224,7 +224,7 @@ def send_proto_message(message, target):
             s.sendall(message)
         s.close()
         return True
-    except socket.timeout:
+    except:
         print("ERROR: Other node did not send a response in time!")
         return False
 
