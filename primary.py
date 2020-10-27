@@ -410,6 +410,10 @@ def send_http_response(sock, resp, keepalive):
 
 def serve_html_file(path):
     global gathered_results
+
+    if path in ["/", "/index.html", "/form.html"]:
+        return serve_index()
+
     if path.startswith("/analyze"):
         analysis_args = path.split("?", 1)[1]
         analysis_args = urllib.parse.unquote(analysis_args)
@@ -444,7 +448,18 @@ def serve_html_file(path):
         print("All results are in (%d)!" % len(gathered_results[request_id]))
         return serve_analysis(request_id, analysis_target)
 
-    return serve_index()
+    else:
+        try:
+            with open("web"+path, "r") as f:
+                data = f.read()
+            if path.endswith("html") or path.endswith("htm"):
+                return HTTPResponse("200 OK", "text/html", data)
+            elif path.endswith(".css"):
+                return HTTPResponse("200 OK", "text/css", data)
+            else:
+                return HTTPResponse("404 NOT FOUND", "text/plain", "The specified resource is not here!")
+        except:
+            return HTTPResponse("404 NOT FOUND", "text/plain", "The specified resource is not here!")
 
 
 def serve_analysis(request_id, analysis_target):
