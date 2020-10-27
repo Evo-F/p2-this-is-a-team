@@ -162,8 +162,8 @@ def send_results(contact, results, id):
     message += results.target + "\n"
     message += str(results.rtt) + "\n"
     message += str(results.size) + "\n"
-    message += results.worker_lat + "\n"
-    message += results.worker_long + "\n"
+    message += str(results.worker_lat) + "\n"
+    message += str(results.worker_long) + "\n"
     message += "eot"
     send_proto_message(message, contact)
 
@@ -415,7 +415,8 @@ def serve_index():
     global all_nodes_listified
     global known_contacts
     all_nodes_listified = ""
-    all_nodes_listified += "[*] %s via %s // %s // %s" % (self_host, cloud.provider, cloud.zone, cloud.city)
+    all_nodes_listified += "[*] %s via %s // %s // %s (%s, %s)" % (self_host, cloud.provider, cloud.zone, cloud.city,
+                                                                   str(cloud.coords[0]), str(cloud.coords[1]))
     all_nodes_listified += "\n"
     request_ident()
     try:
