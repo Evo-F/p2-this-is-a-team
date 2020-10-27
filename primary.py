@@ -47,6 +47,25 @@ def request_id_gen():
     return result
 
 
+def attempt_connection():
+    with open("node_record.txt", "r") as f:
+        data = f.read()
+        f.close()
+    hosts = data.splitlines()
+    for hn in hosts:
+        if send_hello(hn):
+            print("Living contact found: %s" % hn)
+            break
+
+
+def save_hosts():
+    global known_contacts
+    with open("node_record.txt", "w") as f:
+        for kc in known_contacts:
+            f.write(kc + "\n")
+        f.close()
+
+
 def process_results(job_id):
     global gathered_results
     r_list = ""
@@ -154,6 +173,8 @@ def process_job():
 def send_hello(contact):
     if send_proto_message("hello\neot", contact):
         known_contacts.append(contact)
+        return True
+    return False
 
 
 def send_results(contact, results, id):
@@ -477,11 +498,12 @@ http_listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 http_listener.bind(http_addr)
 http_listener.listen()
 
+attempt_connection()
 
-itarget = input("Please input the address of a known node, or press enter if this is the first in the network: ")
-
-if itarget != "":
-    send_hello(itarget)
+if len(known_contacts) == 0:
+    itarget = input("Please input the address of a known node, or press enter if this is the first: ")
+    if itarget != "":
+        send_hello(itarget)
 
 t_http = threading.Thread(target=listen_http)
 t_http.daemon = True
