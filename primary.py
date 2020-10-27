@@ -495,6 +495,7 @@ def serve_index():
         print("Server Count: %d" % num_servers)
 
         print("Server List: (see above)")
+        print(data)
         datastring = data.format(currentserver=cloud.dnsname,
                                  servercount=num_servers,
                                  serverlist=all_nodes_listified)
