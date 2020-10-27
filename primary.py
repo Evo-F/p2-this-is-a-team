@@ -214,8 +214,11 @@ def handle_proto_message(sock, client):
     global known_contacts
     received_message = sock.recv_str_until("eot")
     message_parts = received_message.splitlines()
+
     new_contact = False
     send_ident = False
+    send_okay = True
+
     print("Received new message from %s via port %d // message text follows:" % (client[0], client[1]))
     print("-----")
     for s in message_parts:
