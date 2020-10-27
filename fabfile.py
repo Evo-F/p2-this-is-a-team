@@ -33,8 +33,8 @@ from fabric.operations import put
 # from your laptop, your key is probably named ~/.ssh/cloud_sshkey. But if
 # you are running fabric from within the cloud, it is probably named
 # ~/.ssh/id_rsa instead.
-env.key_filename = '~/.ssh/cloud_sshkey'
-# env.key_filename = '~/.ssh/id_rsa'
+# env.key_filename = '~/.ssh/cloud_sshkey'
+env.key_filename = '~/.ssh/id_rsa'
 
 # This is the list of cloud hosts. Add or remove from this list as you like.
 with open("node_record.txt", "r") as f:
