@@ -173,8 +173,8 @@ def send_ident_report(contact):
     report += cloud.provider + "\n"
     report += cloud.zone + "\n"
     report += cloud.city + "\n"
-    report += cloud.coords[0] + "\n"
-    report += cloud.coords[1] + "\n"
+    report += str(cloud.coords[0]) + "\n"
+    report += str(cloud.coords[1]) + "\n"
     report += "eot"
     send_proto_message(report, contact)
 
@@ -215,6 +215,7 @@ def handle_proto_message(sock, client):
     received_message = sock.recv_str_until("eot")
     message_parts = received_message.splitlines()
     new_contact = False
+    send_ident = False
     print("Received new message from %s via port %d // message text follows:" % (client[0], client[1]))
     print("-----")
     for s in message_parts:
@@ -242,7 +243,7 @@ def handle_proto_message(sock, client):
             send_hello(message_parts[1])
 
     elif received_message.startswith("ident"):
-        send_ident_report(message_parts[1])
+        send_ident = True
 
     elif received_message.startswith("report"):
         global all_nodes_listified
@@ -270,13 +271,17 @@ def handle_proto_message(sock, client):
         requester = message_parts[3]
         current_jobs.append((job_id, target, requester))
 
-    sock.sendall("okay\neot")
+    if send_okay:
+        sock.sendall("okay\neot")
     sock.close()
 
     if new_contact:
         for kc in known_contacts:
             if kc != client[0]:
                 send_proto_message("contact\n%s\neot" % client[0], kc)
+
+    if send_ident:
+        send_ident_report(message_parts[1])
 
 
 def handle_http_request(sock, client):
