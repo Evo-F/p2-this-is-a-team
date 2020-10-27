@@ -37,24 +37,22 @@ env.key_filename = '~/.ssh/cloud_sshkey'
 # env.key_filename = '~/.ssh/id_rsa'
 
 # This is the list of cloud hosts. Add or remove from this list as you like.
-env.hosts = [
-        '34.94.207.48', # gcp - bogoserver
-        '35.228.5.242', # gcp - floppybird
-        '54.235.59.70', # aws - randoserver
-        '3.96.172.100', # aws - uncreatively
-        ]
+with open("node_record.txt", "r") as f:
+    env.hosts = f.read().splitlines()
+
 # This is the host designated as the central coordator. Pick whichever server
 # from all_hosts you like here. By default, just take the first one.
-central_host = env.hosts[0]
+
 
 # The deploy task copies all python files from local directory to every host.
 # If you want to copy other files, you can modify this, or make a separate task
 # for deploying the other files to specific hosts.
 def deploy():
-    run('mkdir -p ~/fabdeploy/')
-    put('*.py', '~/fabdeploy/')
+    run('mkdir -p ~/geoloc-core/web/')
+    put('*.py', '~/geoloc-core/')
+    put('./web/*.html', '~/geoloc-core/web/')
 
-# The start task runs the geoanalyze.py command on every host.
+
 def start():
-    run('python3 ~/fabdeploy/geoanalyze.py ' + central_host + ' 8088')
+    run('sudo python3 ~/geoloc-core/primary.py')
 
