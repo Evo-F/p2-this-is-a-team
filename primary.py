@@ -63,9 +63,11 @@ def attempt_connection():
 
 def save_hosts():
     global known_contacts
-    with open("node_record.txt", "w") as f:
+    with open("node_record.txt", "ra") as f:
+        file_hosts = f.read().splitlines()
         for kc in known_contacts:
-            f.write(kc + "\n")
+            if kc not in file_hosts:
+                f.write(kc + "\n")
         f.close()
 
 
