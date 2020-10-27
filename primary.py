@@ -484,18 +484,18 @@ def serve_index():
     all_nodes_listified += "</tr>\n"
     request_ident()
     try:
-        with open("web/form.html", "rb") as f:
+        with open("web/form.html", "r") as f:
             data = f.read()
             f.close()
 
-        datastring = data.decode()
+        datastring = data
         print("Finished listifying nodes!")
         print(all_nodes_listified)
         print("Cloud DNS Name: %s" % cloud.dnsname)
         print("Server Count: %d" % (len(known_contacts)+1))
         print("Server List: (see above)")
         datastring = datastring.format(currentserver=cloud.dnsname,
-                                       servercount=str(len(known_contacts)+1),
+                                       servercount=(len(known_contacts)+1),
                                        serverlist=all_nodes_listified)
         print("Finished formatting!")
         data = datastring.encode()
