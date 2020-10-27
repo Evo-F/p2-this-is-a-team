@@ -423,7 +423,7 @@ def send_http_response(sock, resp, keepalive):
 def serve_html_file(path):
     global gathered_results
 
-    if path in ["/", "/index.html", "/form.html"]:
+    if path in ["/", "/index.html"]:
         return serve_index()
 
     if path.startswith("/analyze"):
@@ -518,11 +518,10 @@ def serve_index():
         print("Finished listifying nodes!")
         num_servers = len(known_contacts) + 1
 
-        datastring = data.format(currentserver=cloud.dnsname,
-                                 servercount=num_servers,
-                                 serverlist=all_nodes_listified)
+        data = data.format(currentserver=cloud.dnsname,
+                           servercount=num_servers,
+                           serverlist=all_nodes_listified)
         print("Should've finished formatting here!")
-        data = datastring.encode()
         return HTTPResponse("200 OK", "text/html", data)
     except Exception as e:
         print("File read error!")
