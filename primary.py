@@ -88,6 +88,7 @@ def process_results(job_id):
         data += "<td>%s</td>" % host
         data += "<td>%s</td>" % res.target
         data += "<td>%f</td>" % res.rtt
+        data += "<td>%f</td>" % (res.rtt * 60.0)
 
         if res.size == 0:
             data += "<td>Protocol Mismatch (site requires HTTPS)</td>"
