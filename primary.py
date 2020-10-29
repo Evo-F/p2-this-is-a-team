@@ -94,7 +94,7 @@ def process_results(job_id):
         print("Getting some results...")
         res = gathered_results[job_id][host]
         if host == min_rtt_host:
-            data = "<tr style=\"background-color:#FF0000\">"
+            data = "<tr style=\"background-color:#FFFF00\">"
         else:
             data = "<tr>"
         data += "<td>%s</td>" % res.worker_name
