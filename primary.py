@@ -88,7 +88,20 @@ def process_results(job_id):
         data += "<td>%s</td>" % host
         data += "<td>%s</td>" % res.target
         data += "<td>%f</td>" % res.rtt
-        data += "<td>%d</td>" % res.size
+
+        if res.size == 0:
+            data += "<td>Protocol Mismatch (site requires HTTPS)</td>"
+        elif res.size == -1:
+            data += "<td>HTTP 403 Forbidden (site refused to serve a page)</td>"
+        elif res.size == -2:
+            data += "<td>Did Not Accept Connection (potential network-level block or filter)</td>"
+        elif res.size == -3:
+            data += "<td>Error Retrieving Response (node error)</td>"
+        elif res.size == -4:
+            data += "<td>Chunked Transfer Encoding (nothing's wrong, just means we can't parse the webpage)</td>"
+        else:
+            data += "<td>%d</td>" % res.size
+
         data += "<td>%s, %s</td>" % (res.worker_lat, res.worker_long)
         data += "</tr>\n"
         r_list += data
@@ -98,9 +111,6 @@ def process_results(job_id):
 
 def process_specific_url(url):
     parts = parse_url_parts(url)
-    if parts[0] == "https":
-        return -1, -1
-
     addr = (socket.gethostbyname(parts[1]), http_port)
     print("Attempting to ping %s:%d" % (addr[0], addr[1]))
 
@@ -109,7 +119,7 @@ def process_specific_url(url):
     try:
         target_url_sock.connect(addr)
     except:
-        return -1, -1
+        return -1, -2, addr[0]
 
     ping_request = "HEAD %s HTTP/1.1\r\n" % parts[2]
     ping_request += "Host: " + parts[1] + "\r\n\r\n"
@@ -126,19 +136,27 @@ def process_specific_url(url):
         print(response)
         print("-----")
     except:
-        return -1, -1
+        return -1, -3, addr[0]
 
     duration = endtime - starttime
     duration = duration * 1000.0
     print("Duration: %dms" % duration)
     response_lines = response.split("\r\n")
-    size = -1
+    size = -3 # if this value doesn't change, it assumes an error on our end
+    response_code_pieces = response_lines[0].split(" ")
+    if response_code_pieces[1] == "301":
+        return duration, 0, addr[0]
+    elif response_code_pieces[1] == "403":
+        return duration, -1, addr[0]
+
     for line in response_lines:
         if line.startswith("Content-Length:"):
-            size = int(line.split(": ", 1)[1])
+            reported_size = int(line.split(": ", 1)[1])
+            if reported_size > 0:
+                size = reported_size
             break
         if line == "Transfer-Encoding: chunked":
-            size = -1
+            size = -4
             break
     return duration, size, addr[0]
 

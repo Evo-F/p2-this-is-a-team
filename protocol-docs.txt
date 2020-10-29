@@ -58,3 +58,24 @@ SAMPLE REQUEST BODIES:
 - [reporter latitude]
 - [reporter longitude]
 - eot
+
+NOTES ON RESULT:
+Within a [result] message, one of the lines represents the returned webpage size in bytes - this is to indicate whether
+the targeted URL is serving different webpages based on geographical location. For instances where the targeted URL
+sends back negative responses, this number is used instead as an "error code" of sorts.
+
+0: The URL responded with 301
+    This is likely an HTTPS redirect (protocol mismatch). The server may not be blocked or misbehaving, it just requires
+    HTTPS support which we haven't implemented.
+-1: The URL responded with 403
+    The server received our request but for whatever reason is not giving access. This is a server-side error response
+    so it's unlikely the website is being censored - this is indicative of a server-side blockage, potentially owing to
+    geographic location (though not guaranteed).
+-2: The URL did not accept the connection in time
+    URL either did not respond to our request for a connection or did not hear our request at all. This is probably
+    indicative of the host being down/unavailable OR a network-level blockage (not necessarily host's fault).
+-3: There was an error accepting the URL's response
+    Unspecified error while retrieving the URL's response to our request, could be any number of things, it's probably
+    on our side but whatever.
+-4: CHUNKED TRANSFER ENCODING!!
+    There's nothing wrong with this. We're just not dealing with it.
