@@ -245,8 +245,10 @@ def process_job():
 
 
 def send_hello(contact):
+    global known_contacts
     if send_proto_message("hello\neot", contact):
-        known_contacts.append(contact)
+        if contact not in known_contacts:
+            known_contacts.append(contact)
         save_hosts()
         return True
     return False
