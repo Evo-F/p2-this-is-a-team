@@ -246,8 +246,9 @@ def process_job():
 
 def send_hello(contact):
     global known_contacts
+    global self_host
     if send_proto_message("hello\neot", contact):
-        if contact not in known_contacts:
+        if contact not in known_contacts and contact != self_host:
             known_contacts.append(contact)
         save_hosts()
         return True
@@ -319,6 +320,7 @@ def request_ident():
 
 def handle_proto_message(sock, client):
     global known_contacts
+    global self_host
     received_message = sock.recv_str_until("eot")
     message_parts = received_message.splitlines()
 
@@ -340,7 +342,7 @@ def handle_proto_message(sock, client):
         send_okay = False
 
     elif received_message.startswith("hello"):
-        if client[0] not in known_contacts:
+        if client[0] not in known_contacts and client[0] != self_host:
             known_contacts.append(client[0])
             new_contact = True
 
