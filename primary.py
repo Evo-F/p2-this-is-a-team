@@ -256,7 +256,7 @@ def send_ident_report(contact):
     report += cloud.provider + "\n"
     report += cloud.dnsname + "\n"
     report += cloud.zone + "\n"
-    report += cloud.city + "\n"
+    report += cloud.city + ", " + cloud.region + "\n"
     report += str(cloud.coords[0]) + "\n"
     report += str(cloud.coords[1]) + "\n"
     report += "eot"
@@ -544,7 +544,7 @@ def serve_index():
     all_nodes_listified += "<td>%s</td>" % self_host
     all_nodes_listified += "<td>%s</td>" % cloud.provider
     all_nodes_listified += "<td>%s</td>" % cloud.zone
-    all_nodes_listified += "<td>%s</td>" % cloud.city
+    all_nodes_listified += "<td>%s</td>" % cloud.city + ", " + cloud.region
     all_nodes_listified += "<td>%s, %s</td>" % (cloud.coords[0], cloud.coords[1])
     all_nodes_listified += "</tr>\n"
     request_ident()
