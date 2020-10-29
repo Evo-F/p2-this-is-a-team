@@ -8,6 +8,7 @@ import urllib
 
 http_port = 80
 proto_port = 9299
+ping_passes = 5 # how many times the node should "ping" the target for a result
 known_contacts = []
 all_nodes_listified = ""
 current_jobs = []
@@ -116,7 +117,7 @@ def process_specific_url(url):
     print("Attempting to ping %s:%d" % (addr[0], addr[1]))
 
     target_url_sock = socketutil.socket(socket.AF_INET, socket.SOCK_STREAM)
-    target_url_sock.settimeout(5)
+    target_url_sock.settimeout(1)
     try:
         target_url_sock.connect(addr)
     except:
@@ -191,6 +192,7 @@ def parse_url_parts(url):
 def process_job():
     global current_jobs
     global gathered_results
+    global ping_passes
     print("Started process_job loop....")
 
     while True:
@@ -199,10 +201,20 @@ def process_job():
             pass
         for job in current_jobs:
             print("Began new job!")
-            rtt, size, target_ip = process_specific_url(job[1])
+            average_rtt = -1.0
+            for i in range(ping_passes):
+                rtt, temp_size, temp_target_ip = process_specific_url(job[1])
+                if average_rtt < 0.0:
+                    average_rtt = rtt
+                    size = temp_size
+                    target_ip = temp_target_ip
+                    # we don't need to keep doing stuff with the size, so once we get it from the first ping,
+                    # we can Store And Ignore
+                else:
+                    average_rtt = (average_rtt + rtt) / 2.0
 
-            print("RTT: %d, SIZE: %d" % (rtt, size))
-            res = GeolocResults(rtt, size)
+            print("RTT: %d, SIZE: %d" % (average_rtt, size))
+            res = GeolocResults(average_rtt, size)
             res.worker_lat = cloud.coords[0]
             res.worker_long = cloud.coords[1]
             res.target = target_ip
