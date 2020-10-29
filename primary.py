@@ -383,7 +383,7 @@ def handle_proto_message(sock, client):
         for kc in known_contacts:
             if kc != client[0]:
                 nodes += kc + "\n"
-        send_proto_message("contact\n%s\neot" % nodes, client[0])
+        send_proto_message("contact\n%seot" % nodes, client[0])
 
     if send_ident:
         send_ident_report(message_parts[1])
