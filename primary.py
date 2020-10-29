@@ -16,6 +16,7 @@ gathered_results = {}
 
 
 class HTTPRequest:
+    # This code shamelessly borrowed from Project 1.
     def __init__(self):
         self.method = ""
         self.path = ""
@@ -26,6 +27,7 @@ class HTTPRequest:
 
 
 class HTTPResponse:
+    # This code shamelessly borrowed from Project 1.
     def __init__(self, code, mime_type=None, body=None):
         self.code = code
         self.mime_type = mime_type

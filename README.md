@@ -17,9 +17,14 @@ such as heartbeats and listing of known contacts.
 
 Nodes are now capable of exchanging location data based on their cloud provider.
 
+There are currently 8 nodes operational in the following GCP zones: US East, US Central, US West, South America East,
+Europe West, Australia Southeast, Asia/Pacific East (Taiwan), Asia/Pacific Southeast (Singapore).
+
+For best connection, access 35.245.34.243 via your web browser (that's US East).
+
 ### Collaboration and Contributions
 
-At time of most recent commit (10/25/2020), I have not collaborated with anyone for this project.
+At time of most recent commit (10/29/2020), I have not collaborated with anyone for this project.
 
 Specific code has been shamelessly borrowed from Project 1. These blocks of code have been marked as such.
 
