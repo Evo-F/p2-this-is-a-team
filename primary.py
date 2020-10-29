@@ -256,7 +256,7 @@ def send_ident_report(contact):
     report += cloud.provider + "\n"
     report += cloud.dnsname + "\n"
     report += cloud.zone + "\n"
-    report += cloud.city + ", " + cloud.region + "\n"
+    report += cloud.city + ", " + cloud.title + "\n"
     report += str(cloud.coords[0]) + "\n"
     report += str(cloud.coords[1]) + "\n"
     report += "eot"
@@ -538,7 +538,7 @@ def serve_analysis(request_id, analysis_target):
 def serve_index():
     global all_nodes_listified
     global known_contacts
-    self_city = cloud.city + ", " + cloud.region
+    self_city = cloud.city + ", " + cloud.title
     all_nodes_listified = ""
     all_nodes_listified += "<tr>"
     all_nodes_listified += "<td>%s</td>" % cloud.dnsname
