@@ -81,10 +81,22 @@ def process_results(job_id):
     print("Starting to process results!")
     print(gathered_results[job_id].items())
 
+    min_rtt_val = -9.0
+    min_rtt_host = ""
+
+    for host in gathered_results[job_id]:
+        res = gathered_results[job_id][host]
+        if min_rtt_val == -9.0 or res.rtt < min_rtt_val:
+            min_rtt_val = res.rtt
+            min_rtt_host = host
+
     for host in gathered_results[job_id]:
         print("Getting some results...")
         res = gathered_results[job_id][host]
-        data = "<tr>"
+        if host == min_rtt_host:
+            data = "<tr style=\"background-color:#FF0000\">"
+        else:
+            data = "<tr>"
         data += "<td>%s</td>" % res.worker_name
         data += "<td>%s</td>" % host
         data += "<td>%s</td>" % res.target
