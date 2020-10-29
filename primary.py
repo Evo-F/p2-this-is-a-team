@@ -105,7 +105,7 @@ def process_specific_url(url):
     print("Attempting to ping %s:%d" % (addr[0], addr[1]))
 
     target_url_sock = socketutil.socket(socket.AF_INET, socket.SOCK_STREAM)
-    target_url_sock.settimeout(10)
+    target_url_sock.settimeout(5)
     try:
         target_url_sock.connect(addr)
     except:
@@ -119,8 +119,9 @@ def process_specific_url(url):
     target_url_sock.sendall(ping_request)
     starttime = time.monotonic()
     try:
-        response = target_url_sock.recv_str_until("\r\n\r\n")
+        response = target_url_sock.recv_str(1)
         endtime = time.monotonic()
+        response += target_url_sock.recv_str_until("\r\n\r\n")
         print("-----")
         print(response)
         print("-----")
@@ -288,6 +289,7 @@ def handle_proto_message(sock, client):
 
     if received_message.startswith("okay"):
         # prevents infinite loops of okay responses
+        # realistically should never occur
         send_okay = False
 
     elif received_message.startswith("hello"):
@@ -304,8 +306,9 @@ def handle_proto_message(sock, client):
             save_hosts()
 
     elif received_message.startswith("contact"):
-        if message_parts[1] not in known_contacts:
-            send_hello(message_parts[1])
+        for i in range(1, len(message_parts)):
+            if message_parts[i] not in known_contacts:
+                send_hello(message_parts[i])
 
     elif received_message.startswith("ident"):
         send_ident = True
@@ -331,9 +334,11 @@ def handle_proto_message(sock, client):
     # This is to prevent erroneous timeouts and re-sends.
 
     if new_contact:
+        nodes = ""
         for kc in known_contacts:
             if kc != client[0]:
-                send_proto_message("contact\n%s\neot" % client[0], kc)
+                nodes += kc + "\n"
+        send_proto_message("contact\n%s\neot" % nodes, client[0])
 
     if send_ident:
         send_ident_report(message_parts[1])

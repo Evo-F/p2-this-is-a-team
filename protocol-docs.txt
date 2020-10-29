@@ -36,7 +36,8 @@ SAMPLE REQUEST BODIES:
 - eot
 
 - contact
-- [node address]
+- [node addresses]
+- [one per line]
 - eot
 
 - okay
