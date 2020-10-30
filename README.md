@@ -24,7 +24,14 @@ For best connection, access 35.245.34.243 via your web browser (that's US East).
 
 ### Collaboration and Contributions
 
-At time of most recent commit (10/29/2020), I have not collaborated with anyone for this project.
+At time of most recent commit (10/30/2020), I have not collaborated with anyone for the code on this project.
+
+For the purposes of testing and bug identification, I enlisted the following students:
+* Aidan Curtis (2021)
+* Justin Bella (2021)
+* Emily Mercier (2021)
+
+These students had access to the project via the web interface **only.** None of them had access to the code.
 
 Specific code has been shamelessly borrowed from Project 1. These blocks of code have been marked as such.
 
