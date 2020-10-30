@@ -103,7 +103,10 @@ def process_results(job_id):
         data += "<td>%s</td>" % host
         data += "<td>%s</td>" % res.target
         data += "<td>%f</td>" % res.rtt
-        data += "<td>%f</td>" % (res.rtt * 60.0)
+        if res.rtt < 0:
+            data += "<td>N/A</td>"
+        else:
+            data += "<td>%f</td>" % (res.rtt * 60.0)
 
         if res.size == 0:
             data += "<td>Protocol Mismatch (site requires HTTPS)</td>"
@@ -115,6 +118,8 @@ def process_results(job_id):
             data += "<td>Error Retrieving Response (node error)</td>"
         elif res.size == -4:
             data += "<td>Chunked Transfer Encoding (nothing's wrong, just means we can't parse the webpage)</td>"
+        elif res.size == -5:
+            data += "<td>Bad URL, couldn't find an IP (did you type your URL correctly?)</td>"
         else:
             data += "<td>%d</td>" % res.size
 
@@ -127,6 +132,10 @@ def process_results(job_id):
 
 def process_specific_url(url):
     parts = parse_url_parts(url)
+    try:
+        hostname = socket.gethostbyname(parts[1])
+    except:
+        return -1, -5, parts[1]
     addr = (socket.gethostbyname(parts[1]), http_port)
     print("Attempting to ping %s:%d" % (addr[0], addr[1]))
 
@@ -226,6 +235,10 @@ def process_job():
                     # we can Store And Ignore
                 else:
                     average_rtt = (average_rtt + rtt) / 2.0
+
+                if size == -5:
+                    # indicates a bad URL parse, we SHOULD NOT continue pinging
+                    break
 
             print("RTT: %d, SIZE: %d" % (average_rtt, size))
             res = GeolocResults(average_rtt, size)
