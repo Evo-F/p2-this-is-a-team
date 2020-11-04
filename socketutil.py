@@ -26,6 +26,7 @@ Example usage:
 """
 
 import socket as _socket
+import ssl
 
 # copy some of the socket.* global variables and constants, so you can do
 # socketutil.AF_INET if you like, instead of socket.AF_INET
@@ -41,12 +42,17 @@ def create_connection(address, timeout=None, source_address=None):
 class socket(_socket.socket):
 
     """Create a new socket object."""
-    def __init__(self, family=AF_INET, type=SOCK_STREAM, proto=-1, fileno=None):
+    def __init__(self, family=AF_INET, type=SOCK_STREAM, proto=-1, fileno=None, secure=False):
         if fileno is None:
             _socket.socket.__init__(self, family, type)
         else:
             _socket.socket.__init__(self, family, type, proto, fileno)
         self.rq = b""
+        if secure is True:
+            ssl_context = ssl.create_default_context()
+            ssl_context.wrap_socket(self)
+
+
 
     """Accept a new connection on the underlying socket."""
     def accept(self):
