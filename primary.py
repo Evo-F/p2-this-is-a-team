@@ -163,6 +163,7 @@ def process_specific_url(url):
     print("Sent Request:\n-----")
     print(ping_request)
     print("-----")
+    ping_request = ping_request.encode()
     starttime = time.monotonic()
     target_url_sock.sendall(ping_request)
     try:
