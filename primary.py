@@ -178,7 +178,9 @@ def process_specific_url(url):
         print("-----")
     except ssl.SSLError as err:
         print("We got one of them there SSL errors!")
+        print(err.library)
         print(err.reason)
+        print(err)
         return -1, -3, addr[0]
 
     duration = endtime - starttime
