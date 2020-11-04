@@ -46,6 +46,7 @@ class socket(_socket.socket):
 
     """Create a new socket object."""
     def __init__(self, family=AF_INET, type=SOCK_STREAM, proto=-1, fileno=None):
+        print("Creating new socketutil socket!")
         if fileno is None:
             _socket.socket.__init__(self, family, type)
         else:
