@@ -152,7 +152,7 @@ def process_specific_url(url):
     try:
         target_url_sock = socket.create_connection(addr, timeout=2)
     except Exception as err:
-        print(err)
+        print(err.__traceback__)
         return -1, -2, addr[0]
 
     if addr[1] == 443:
