@@ -176,7 +176,7 @@ def process_specific_url(url):
         print(response)
         print("-----")
     except Exception as err:
-        print(err)
+        print(err.__traceback__)
         return -1, -3, addr[0]
 
     duration = endtime - starttime
