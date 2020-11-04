@@ -18,7 +18,6 @@ constructors and functions. These are SOLELY HELPER FUNCTIONS FOR RETRIEVING AND
 """
 
 import socket as _socket
-import ssl
 
 # copy some of the socket.* global variables and constants, so you can do
 # socketutil.AF_INET if you like, instead of socket.AF_INET
@@ -129,7 +128,7 @@ before n bytes could be received from the socket."""
 
 
 def recv_str_exactly(self, n):
-    data = self.recv_exactly(n)
+    data = recv_exactly(self, n)
     if data:
         data = data.decode()
     return data
@@ -171,7 +170,7 @@ was an error before the delimiter was seen."""
 
 
 def recv_str_until(self, delim):
-    data = self.recv_until(delim)
+    data = recv_until(self, delim)
     if data:
         data = data.decode()
     return data
