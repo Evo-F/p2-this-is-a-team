@@ -146,11 +146,10 @@ def process_specific_url(url):
     https_context = ssl.create_default_context()
     print("Attempting to ping %s:%d" % (addr[0], addr[1]))
 
+    target_url_sock = socketutil.socket(socket.AF_INET, socket.SOCK_STREAM)
+
     if addr[1] == 443:
-        target_url_sock = https_context.wrap_socket(socketutil.socket(socket.AF_INET, socket.SOCK_STREAM),
-                                                    server_hostname=hostname)
-    else:
-        target_url_sock = socketutil.socket(socket.AF_INET, socket.SOCK_STREAM)
+        target_url_sock = https_context.wrap_socket(socketutil.socket(socket.AF_INET, socket.SOCK_STREAM))
     target_url_sock.settimeout(1)
 
     try:
