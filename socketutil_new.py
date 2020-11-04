@@ -147,7 +147,7 @@ def recv_until(self, delim):
 
     rq = b""
     while delim not in rq:
-        more = _socket.socket.recv(self, 4096)
+        more = self.recv(4096)
         if not more:
             return None
         rq += more
