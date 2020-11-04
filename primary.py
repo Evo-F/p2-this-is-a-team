@@ -1,5 +1,6 @@
 import socket
 import socketutil
+import ssl
 import time
 import random
 import cloud
@@ -136,11 +137,22 @@ def process_specific_url(url):
         hostname = socket.gethostbyname(parts[1])
     except:
         return -1, -5, parts[1]
-    addr = (socket.gethostbyname(parts[1]), http_port)
+
+    if parts[0] == "https":
+        addr = (hostname, 443)
+    else:
+        addr = (hostname, 80)
+
+    https_context = ssl.create_default_context()
     print("Attempting to ping %s:%d" % (addr[0], addr[1]))
 
-    target_url_sock = socketutil.socket(socket.AF_INET, socket.SOCK_STREAM)
+    if addr[1] == 443:
+        target_url_sock = https_context.wrap_socket(socketutil.socket(socket.AF_INET, socket.SOCK_STREAM),
+                                                    server_hostname=hostname)
+    else:
+        target_url_sock = socketutil.socket(socket.AF_INET, socket.SOCK_STREAM)
     target_url_sock.settimeout(1)
+
     try:
         target_url_sock.connect(addr)
     except:
@@ -151,8 +163,8 @@ def process_specific_url(url):
     print("Sent Request:\n-----")
     print(ping_request)
     print("-----")
-    target_url_sock.sendall(ping_request)
     starttime = time.monotonic()
+    target_url_sock.sendall(ping_request)
     try:
         response = target_url_sock.recv_str(1)
         endtime = time.monotonic()
@@ -167,7 +179,7 @@ def process_specific_url(url):
     duration = duration * 1000.0
     print("Duration: %dms" % duration)
     response_lines = response.split("\r\n")
-    size = -3 # if this value doesn't change, it assumes an error on our end
+    size = -3  # if this value doesn't change, it assumes an error on our end
     response_code_pieces = response_lines[0].split(" ")
     if response_code_pieces[1] == "301":
         return duration, 0, addr[0]
@@ -192,6 +204,7 @@ def parse_url_parts(url):
     # parts[2] is the path (/index.html)
     parts = []
 
+    # Step 1 - Determine protocol, and remove the protocol marker from the URL.
     if url.startswith("https://"):
         parts.append("https")
     else:
@@ -202,6 +215,7 @@ def parse_url_parts(url):
     elif url.startswith("http://"):
         url = url[7:]
 
+    # Step 2 - Separate the main URL from the path. If there is no path, add a dummy path.
     split_url = url.split("/", 1)
     parts.append(split_url[0])
     if len(split_url) == 1:
