@@ -112,12 +112,13 @@ before n bytes could be received from the socket."""
 
 
 def recv_exactly(self, n):
-    while len(self.rq) < n:
-        more = _socket.socket.recv(self, max(4096, n - len(self.rq)))
+    rq = b""
+    while len(rq) < n:
+        more = _socket.socket.recv(self, max(4096, n - len(rq)))
         if not more:
             return None
-        self.rq += more
-    data, self.rq = self.rq[0:n], self.rq[n:]
+        rq += more
+    data = rq[0:n]
     return data
 
 
@@ -148,12 +149,14 @@ was an error before the delimiter was seen."""
 def recv_until(self, delim):
     if isinstance(delim, str):
         delim = delim.encode()
-    while delim not in self.rq:
+
+    rq = b""
+    while delim not in rq:
         more = _socket.socket.recv(self, 4096)
         if not more:
             return None
-        self.rq += more
-    data, self.rq = self.rq.split(delim, 1)
+        rq += more
+    data = rq.split(delim, 1)
     return data
 
 
