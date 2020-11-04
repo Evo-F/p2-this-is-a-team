@@ -104,7 +104,10 @@ def process_results(job_id):
         data += "<td>%s</td>" % res.worker_name
         data += "<td>%s</td>" % host
         data += "<td>%s</td>" % res.target
-        data += "<td>%f</td>" % res.rtt
+        if res.rtt < 0:
+            data += "<td>N/A</td>"
+        else:
+            data += "<td>%f</td>" % res.rtt
         if res.rtt < 0:
             data += "<td>N/A</td>"
         else:

@@ -13,7 +13,7 @@
   <tr>
     <th>Worker Name</th>
     <th>Worker IP</th>
-    <th>Target IP</th>
+    <th>Target Host</th>
     <th>Average Ping (in ms)</th>
     <th>Approx. Distance (in miles)</th>
     <th>Size of Webpage</th>
@@ -24,7 +24,7 @@
 
   <p>
     <form action="/analyze" method="GET">
-      Enter a URL to analyze! (HTTPS is not supported yet, only HTTP so far, sorry):<br>
+      Enter a URL to analyze! (Yes, HTTPS is supported!):<br>
       <input type="text" name="target" size="80" value="{hostname}">
       <input type="submit">
     </form>
