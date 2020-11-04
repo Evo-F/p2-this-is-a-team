@@ -143,10 +143,6 @@ def process_specific_url(url):
     if parts[0] == "https":
         addr = (parts[1], 443)
         https_context = ssl.create_default_context()
-        print("MIN %s, MAX %s" % (https_context.minimum_version, https_context.maximum_version))
-        https_context.minimum_version = ssl.TLSVersion.TLSv1_1
-        https_context.maxmimum_version = ssl.TLSVersion.TLSv1_3
-        print("MIN %s, MAX %s" % (https_context.minimum_version, https_context.maximum_version))
     else:
         addr = (parts[1], 80)
 

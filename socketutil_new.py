@@ -32,7 +32,7 @@ less than the full length of the data."""
 def send(self, data):
     if isinstance(data, str):
         data = str.encode()
-    return _socket.socket.send(self, data)
+    return self.send(data)
 
 
 """Send to the underlying socket, but accepts strings or bytes."""
@@ -41,19 +41,14 @@ def send(self, data):
 def sendall(self, data):
     if isinstance(data, str):
         data = data.encode()
-    return _socket.socket.sendall(self, data)
+    return self.sendall(data)
 
 
 """Receive up to n bytes from the underlying socket."""
 
 
 def recv(self, n):
-    if len(self.rq) == 0:
-        return _socket.socket.recv(self, n)
-    else:
-        data = self.rq
-        self.rq = b""
-        return data
+    return self.recv(n)
 
 
 """Receive up to buffersize bytes (or len(buffer) if buffersize is
