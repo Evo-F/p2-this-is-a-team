@@ -80,3 +80,5 @@ sends back negative responses, this number is used instead as an "error code" of
     There's nothing wrong with this. We're just not dealing with it.
 -5: Invalid URL
     We were unable to get an IP address associated with that URL, so it might be badly formatted.
+-6: Improper Returned Headers!
+    The server did not send back a Chunked Transfer Encoding or Content-Length header, so we have no idea what their site looks like.

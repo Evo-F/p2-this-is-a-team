@@ -122,6 +122,8 @@ def process_results(job_id):
             data += "<td>Chunked Transfer Encoding (nothing's wrong, just means we can't parse the webpage)</td>"
         elif res.size == -5:
             data += "<td>Bad URL, couldn't find an IP (did you type your URL correctly?)</td>"
+        elif res.size == -6:
+            data += "<td>No Content-Length or Transfer-Encoding Headers (this is on them, not us)</td>"
         else:
             data += "<td>%d</td>" % res.size
 
@@ -204,6 +206,7 @@ def process_specific_url(url):
         if line == "Transfer-Encoding: chunked":
             size = -4
             break
+        size = -6 # keep doing this until we find evidence to the contrary
     return duration, size, addr[0]
 
 
