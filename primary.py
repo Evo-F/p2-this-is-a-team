@@ -165,6 +165,7 @@ def process_specific_url(url):
     starttime = time.monotonic()
     socketutil_new.sendall(target_url_sock, ping_request)
     try:
+        print("Waiting for first response...")
         response = socketutil_new.recv_str(target_url_sock, 1)
         endtime = time.monotonic()
         print("First byte received! Stopping the clock!")
@@ -173,7 +174,8 @@ def process_specific_url(url):
         print("-----")
         print(response)
         print("-----")
-    except:
+    except Exception as err:
+        print(err)
         return -1, -3, addr[0]
 
     duration = endtime - starttime
