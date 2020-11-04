@@ -156,7 +156,7 @@ def recv_until(self, delim):
         if not more:
             return None
         rq += more
-    data = rq.split(delim, 1)
+    data = rq.split(delim, 1)[0]
     return data
 
 
