@@ -139,9 +139,9 @@ def process_specific_url(url):
         return -1, -5, parts[1]
 
     if parts[0] == "https":
-        addr = (hostname, 443)
+        addr = (parts[1], 443)
     else:
-        addr = (hostname, 80)
+        addr = (parts[1], 80)
 
     print("Attempting to ping %s:%d" % (addr[0], addr[1]))
 
