@@ -4,25 +4,17 @@
 # Updated: 16 October 2020 - renamed to socketutil, added more helpers
 
 """
-This module contains socket helpers designed to make regular Python sockets a
-little easier to work with. By themselves, Python sockets are a little
-cumbersome -- there is no way to read up to the first blank line, for example,
-and most of the methods only work with bytes objects instead of string objects.
-This class provides a wrapper for sockets that adds a few such new features.
+As of November 4th, 2020, this file has been heavily modified by project author (Evo Fearnley).
 
-Example usage:
+This file NO LONGER contains a helper class. Instead, it is a series of helper functions which take raw Python sockets
+as parameters. Only the function calls themselves have been modified - all functionality should be identical.
 
-    import socket
-    import socketutil
+This was done to support HTTPS/SSL-encrypted sockets, as the current class implementation does not allow for this.
 
-    s = socketutil.socket(socket.AF_INET, socket.SOCK_STREAM)
-    addr = (host, port)
-    s.connect(addr)
-    s.sendall("Hello\n")                  # Encodes the string then sends it.
-    request = s.recv_until("\r\n\r\n")    # This reads everything up to the first blank line
-    n = ...
-    body = s.recv_exactly(n)              # This reads exactly n bytes, no more, no less
-    s.close()
+This file exists as an archive and backup copy. The actual functionality described above is in:
+    socketutil_new.py
+
+-EF
 """
 
 import socket as _socket
@@ -39,7 +31,7 @@ def create_connection(address, timeout=None, source_address=None, secure=False, 
     if secure is True and ssl_host is not None:
         ssl_context = ssl.create_default_context()
         s = ssl_context.wrap_socket(s, server_hostname=ssl_host)
-    return socket(s)
+    return socket(self=s)
 
 """Socket wrapper class, extends _socket.socket with new features."""
 class socket(_socket.socket):

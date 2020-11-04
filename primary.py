@@ -1,5 +1,6 @@
 import socket
-import socketutil
+# import socketutil
+import socketutil_new
 import ssl
 import time
 import random
@@ -139,26 +140,21 @@ def process_specific_url(url):
         return -1, -5, parts[1]
 
     if parts[0] == "https":
-        addr = (parts[1], 443)
+        addr = (hostname, 443)
+        https_context = ssl.create_default_context()
     else:
-        addr = (parts[1], 80)
+        addr = (hostname, 80)
 
     print("Attempting to ping %s:%d" % (addr[0], addr[1]))
 
-
     try:
-        if addr[1] == 443:
-            print("Creating secure connection!")
-            target_url_sock = socketutil.create_connection(addr, timeout=1, secure=True, ssl_host=parts[1])
-            print("Created secure connection!")
-
-        else:
-            print("Creating unsecure connection!")
-            target_url_sock = socketutil.create_connection(addr, timeout=1)
-            print("Created unsecure connection!")
+        target_url_sock = socket.create_connection(addr, timeout=2)
     except Exception as err:
         print(err)
         return -1, -2, addr[0]
+
+    if addr[1] == 443:
+        target_url_sock = https_context.wrap_socket(target_url_sock)
 
     ping_request = "HEAD %s HTTP/1.1\r\n" % parts[2]
     ping_request += "Host: " + parts[1] + "\r\n\r\n"
@@ -166,12 +162,13 @@ def process_specific_url(url):
     print(ping_request)
     print("-----")
     starttime = time.monotonic()
-    target_url_sock.sendall(ping_request)
+    socketutil_new.sendall(target_url_sock, ping_request)
+    target_url_sock.rq = b""
     try:
-        response = target_url_sock.recv_str(1)
+        response = socketutil_new.recv_str(target_url_sock, 1)
         endtime = time.monotonic()
         print("First byte received! Stopping the clock!")
-        response += target_url_sock.recv_str_until("\r\n\r\n")
+        response += socketutil_new.recv_str_until(target_url_sock, "\r\n\r\n")
         print("All bytes received! They are as follows:")
         print("-----")
         print(response)
@@ -313,23 +310,21 @@ def send_ident_report(contact):
 
 def send_proto_message(message, target):
     addr = (target, proto_port)
-    s = socketutil.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.settimeout(1)
     try:
-        s.connect(addr)
+        s = socket.create_connection(addr, timeout=1)
     except:
         print("[CONN] ERROR Attempted to open socket to target %s:%d, but it did not respond!" % (target, proto_port))
         return False
 
     print("[CONN] SUCCESS %s:%d" % (target, proto_port))
-    s.sendall(message)
+    socketutil_new.sendall(s, message)
 
     try:
         while True:
-            response = s.recv_str_until("eot")
+            response = socketutil_new.recv_str_until(s, "eot")
             if response.startswith("okay"):
                 break
-            s.sendall(message)
+            socketutil_new.sendall(s, message)
         s.close()
         return True
     except:
@@ -352,7 +347,7 @@ def request_ident():
 def handle_proto_message(sock, client):
     global known_contacts
     global self_host
-    received_message = sock.recv_str_until("eot")
+    received_message = socketutil_new.recv_str_until(sock, "eot")
     message_parts = received_message.splitlines()
 
     new_contact = False
@@ -406,7 +401,7 @@ def handle_proto_message(sock, client):
         current_jobs.append((job_id, target, requester))
 
     if send_okay:
-        sock.sendall("okay\neot")
+        socketutil_new.sendall(sock, "okay\neot")
     sock.close()
 
     # All below clauses are situational.
@@ -452,7 +447,7 @@ def handle_proto_message(sock, client):
 
 def handle_http_request(sock, client):
     print("New HTTP request from client %s:%d" % (client[0], client[1]))
-    request = sock.recv_str_until("\r\n\r\n")
+    request = socketutil_new.recv_str_until(sock, "\r\n\r\n")
     print("-----")
     print(request)
     print("-----")
@@ -501,8 +496,8 @@ def send_http_response(sock, resp, keepalive):
     print(data)
     print(resp.body)
     print("-----")
-    sock.sendall(data.encode())
-    sock.sendall(resp.body)
+    socketutil_new.sendall(sock, data.encode())
+    socketutil_new.sendall(sock, resp.body)
 
 
 def serve_html_file(path):
@@ -650,12 +645,12 @@ self_host = cloud.gcp_get_my_external_ip()
 print("Currently hosting via: "+str(self_host))
 server_addr = ("", proto_port)
 http_addr = ("", http_port)
-listener = socketutil.socket(socket.AF_INET, socket.SOCK_STREAM)
+listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 listener.bind(server_addr)
 listener.listen()
 
-http_listener = socketutil.socket(socket.AF_INET, socket.SOCK_STREAM)
+http_listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 http_listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 http_listener.bind(http_addr)
 http_listener.listen()
