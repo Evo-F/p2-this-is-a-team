@@ -1,6 +1,5 @@
 import socket
 import socketutil
-import ssl_socketutil
 import ssl
 import time
 import random
