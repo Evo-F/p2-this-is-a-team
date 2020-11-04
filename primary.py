@@ -161,7 +161,7 @@ def process_specific_url(url):
     if addr[1] == 443:
         target_url_sock = https_context.wrap_socket(target_url_sock, server_hostname=parts[1])
         print("TLS enabled!")
-        print(ssl.TLSVersion)
+        print(target_url_sock)
 
     ping_request = "HEAD %s HTTP/1.1\r\n" % parts[2]
     ping_request += "Host: " + parts[1] + "\r\n\r\n"
