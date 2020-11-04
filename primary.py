@@ -350,6 +350,11 @@ def request_ident():
     print("Requesting identification from all nodes...")
     global all_nodes_listified
     global known_contacts
+
+    for kc in known_contacts:
+        if not send_proto_message("heartbeat\neot", kc):
+            known_contacts.remove(kc) # does not wait for ident from dead nodes
+
     for kc in known_contacts:
         send_proto_message("ident\n%s\neot" % self_host, kc)
 
