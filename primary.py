@@ -144,18 +144,14 @@ def process_specific_url(url):
     else:
         addr = (hostname, 80)
 
-    https_context = ssl.create_default_context()
     print("Attempting to ping %s:%d" % (addr[0], addr[1]))
 
     if addr[1] == 443:
-        target_url_sock = ssl_socketutil.socket(socket.AF_INET, socket.SOCK_STREAM)
+        target_url_sock = ssl_socketutil.socket(socket.AF_INET, socket.SOCK_STREAM, secure=True)
     else:
         target_url_sock = socketutil.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     target_url_sock.settimeout(1)
-
-    # So by this point, target_url_sock is wrapped around EITHER an unencrypted or encrypted socket.
-    # Either way, we get our helper functions back, and the SSL status of the socket should be retained.
 
     try:
         target_url_sock.connect(addr)
