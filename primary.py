@@ -148,10 +148,16 @@ def process_specific_url(url):
 
     try:
         if addr[1] == 443:
+            print("Creating secure connection!")
             target_url_sock = socketutil.create_connection(addr, timeout=1, secure=True, ssl_host=parts[1])
+            print("Created secure connection!")
+
         else:
+            print("Creating unsecure connection!")
             target_url_sock = socketutil.create_connection(addr, timeout=1)
-    except:
+            print("Created unsecure connection!")
+    except Exception as err:
+        print(err)
         return -1, -2, addr[0]
 
     ping_request = "HEAD %s HTTP/1.1\r\n" % parts[2]
