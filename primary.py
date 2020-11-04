@@ -163,7 +163,6 @@ def process_specific_url(url):
     print("-----")
     starttime = time.monotonic()
     socketutil_new.sendall(target_url_sock, ping_request)
-    target_url_sock.rq = b""
     try:
         response = socketutil_new.recv_str(target_url_sock, 1)
         endtime = time.monotonic()
