@@ -110,7 +110,7 @@ def process_results(job_id):
             data += "<td>%f</td>" % (res.rtt * 60.0)
 
         if res.size == 0:
-            data += "<td>Protocol Mismatch (site requires HTTPS)</td>"
+            data += "<td>HTTP 301 Moved Permanently (your site appears to be somewhere else)</td>"
         elif res.size == -1:
             data += "<td>HTTP 403 Forbidden (site refused to serve a page)</td>"
         elif res.size == -2:

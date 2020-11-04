@@ -65,8 +65,7 @@ the targeted URL is serving different webpages based on geographical location. F
 sends back negative responses, this number is used instead as an "error code" of sorts.
 
 0: The URL responded with 301
-    This is likely an HTTPS redirect (protocol mismatch). The server may not be blocked or misbehaving, it just requires
-    HTTPS support which we haven't implemented.
+    The server doesn't like the address we just pinged, and wants us somewhere else. Whoops.
 -1: The URL responded with 403
     The server received our request but for whatever reason is not giving access. This is a server-side error response
     so it's unlikely the website is being censored - this is indicative of a server-side blockage, potentially owing to
