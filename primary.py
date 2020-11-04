@@ -135,15 +135,16 @@ def process_results(job_id):
 def process_specific_url(url):
     parts = parse_url_parts(url)
     try:
-        hostname = socket.gethostbyname(parts[1])
+        socket.gethostbyname(parts[1])
+        # This is error-checking to make sure the URL entered was valid
     except:
         return -1, -5, parts[1]
 
     if parts[0] == "https":
-        addr = (hostname, 443)
+        addr = (parts[1], 443)
         https_context = ssl.create_default_context()
     else:
-        addr = (hostname, 80)
+        addr = (parts[1], 80)
 
     print("Attempting to ping %s:%d" % (addr[0], addr[1]))
 
