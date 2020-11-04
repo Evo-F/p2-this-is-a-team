@@ -145,15 +145,12 @@ def process_specific_url(url):
 
     print("Attempting to ping %s:%d" % (addr[0], addr[1]))
 
-    if addr[1] == 443:
-        target_url_sock = socketutil.socket(socket.AF_INET, socket.SOCK_STREAM, secure=True, ssl_hostname=parts[1])
-    else:
-        target_url_sock = socketutil.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-    target_url_sock.settimeout(1)
 
     try:
-        target_url_sock.connect(addr)
+        if addr[1] == 443:
+            target_url_sock = socketutil.create_connection(addr, timeout=1, secure=True, ssl_host=parts[1])
+        else:
+            target_url_sock = socketutil.create_connection(addr, timeout=1)
     except:
         return -1, -2, addr[0]
 

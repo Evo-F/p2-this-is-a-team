@@ -34,24 +34,23 @@ AF_INET = _socket.AF_INET
 SOCK_STREAM = _socket.SOCK_STREAM
 
 """Connects to an address, with an optional timeout and source_address."""
-def create_connection(address, timeout=None, source_address=None):
+def create_connection(address, timeout=None, source_address=None, secure=False, ssl_host=None):
     s = _socket.create_connection(address, timeout, source_address)
+    if secure is True and ssl_host is not None:
+        ssl_context = ssl.create_default_context()
+        s = ssl_context.wrap_socket(s, server_hostname=ssl_host)
     return socket(s)
 
 """Socket wrapper class, extends _socket.socket with new features."""
 class socket(_socket.socket):
 
     """Create a new socket object."""
-    def __init__(self, family=AF_INET, type=SOCK_STREAM, proto=-1, fileno=None, secure=False, ssl_hostname=None):
+    def __init__(self, family=AF_INET, type=SOCK_STREAM, proto=-1, fileno=None):
         if fileno is None:
             _socket.socket.__init__(self, family, type)
         else:
             _socket.socket.__init__(self, family, type, proto, fileno)
         self.rq = b""
-        if secure is True and ssl_hostname is not None:
-            ssl_context = ssl.create_default_context()
-            ssl_context.wrap_socket(self, server_hostname=ssl_hostname)
-
 
 
     """Accept a new connection on the underlying socket."""
