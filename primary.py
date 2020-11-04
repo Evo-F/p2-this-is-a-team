@@ -166,19 +166,20 @@ def process_specific_url(url):
     starttime = time.monotonic()
     socketutil_new.sendall(target_url_sock, ping_request)
 
-    # try:
-    print("Waiting for first response...")
-    response = socketutil_new.recv_str(target_url_sock, 1)
-    endtime = time.monotonic()
-    print("First byte received! Stopping the clock!")
-    response += socketutil_new.recv_str_until(target_url_sock, "\r\n\r\n")
-    print("All bytes received! They are as follows:")
-    print("-----")
-    print(response)
-    print("-----")
-    # except Exception as err:
-        # print(err.__traceback__)
-        # return -1, -3, addr[0]
+    try:
+        print("Waiting for first response...")
+        response = socketutil_new.recv_str(target_url_sock, 1)
+        endtime = time.monotonic()
+        print("First byte received! Stopping the clock!")
+        response += socketutil_new.recv_str_until(target_url_sock, "\r\n\r\n")
+        print("All bytes received! They are as follows:")
+        print("-----")
+        print(response)
+        print("-----")
+    except ssl.SSLError as err:
+        print("We got one of them there SSL errors!")
+        print(err.reason)
+        return -1, -3, addr[0]
 
     duration = endtime - starttime
     duration = duration * 1000.0
