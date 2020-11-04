@@ -42,15 +42,15 @@ def create_connection(address, timeout=None, source_address=None):
 class socket(_socket.socket):
 
     """Create a new socket object."""
-    def __init__(self, family=AF_INET, type=SOCK_STREAM, proto=-1, fileno=None, secure=False):
+    def __init__(self, family=AF_INET, type=SOCK_STREAM, proto=-1, fileno=None, secure=False, ssl_hostname=None):
         if fileno is None:
             _socket.socket.__init__(self, family, type)
         else:
             _socket.socket.__init__(self, family, type, proto, fileno)
         self.rq = b""
-        if secure is True:
+        if secure is True and ssl_hostname is not None:
             ssl_context = ssl.create_default_context()
-            ssl_context.wrap_socket(self)
+            ssl_context.wrap_socket(self, server_hostname=ssl_hostname)
 
 
 
