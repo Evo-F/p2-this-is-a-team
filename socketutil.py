@@ -48,10 +48,15 @@ class socket(_socket.socket):
     def __init__(self, family=AF_INET, type=SOCK_STREAM, proto=-1, fileno=None):
         print("Creating new socketutil socket!")
         if fileno is None:
+            print("socketutil location 1a")
             _socket.socket.__init__(self, family, type)
+            print("end 1a")
         else:
+            print("socketutil location 1b")
             _socket.socket.__init__(self, family, type, proto, fileno)
+            print("end 1b")
         self.rq = b""
+        print("Created new socketutil socket!")
 
 
     """Accept a new connection on the underlying socket."""
