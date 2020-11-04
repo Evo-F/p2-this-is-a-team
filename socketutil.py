@@ -49,6 +49,8 @@ class socket(_socket.socket):
         print("Creating new socketutil socket!")
         if fileno is None:
             print("socketutil location 1a")
+            print(family)
+            print(type)
             _socket.socket.__init__(self, family, type)
             print("end 1a")
         else:
