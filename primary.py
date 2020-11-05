@@ -401,8 +401,8 @@ def handle_proto_message(sock, client):
             known_contacts.append(client[0])
             new_contact = True
         else:
-            print("Is client already known? " + (client[0] in known_contacts))
-            print("Is client myself? " + (client[0] == self_host))
+            print("Client is %s, and I am %s" % (client[0], self_host))
+            print(known_contacts)
 
     elif received_message.startswith("heartbeat"):
         print("Heard a heartbeat from %s!" % client[0])
