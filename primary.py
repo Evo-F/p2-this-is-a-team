@@ -355,7 +355,9 @@ def request_ident():
 
     for kc in known_contacts:
         if not send_proto_message("heartbeat\neot", kc):
-            known_contacts.remove(kc) # does not wait for ident from dead nodes
+            known_contacts.remove(kc)
+            # in this case, the queried node appears to be dead, so it's removed from the known_contacts list
+            # it will eventually reestablish contact some other way, if it's not dead
         else:
             expected_responses += 1
             send_proto_message("ident\n%s\neot" % self_host, kc)
