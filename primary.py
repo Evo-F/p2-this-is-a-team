@@ -188,7 +188,12 @@ def process_specific_url(url):
         print(err.reason)
         print(err)
         return -1, -3, addr[0]
+    except Exception as err:
+        print("Exception!")
+        print(err)
+        return -1, -3, addr[0]
 
+    target_url_sock.close()
     duration = endtime - starttime
     duration = duration * 1000.0
     print("Duration: %dms" % duration)
@@ -209,7 +214,7 @@ def process_specific_url(url):
         if line == "Transfer-Encoding: chunked":
             size = -4
             break
-        size = -6 # keep doing this until we find evidence to the contrary
+        size = -6   # keep doing this until we find evidence to the contrary
     return duration, size, addr[0]
 
 
@@ -350,15 +355,16 @@ def request_ident():
     print("Requesting identification from all nodes...")
     global all_nodes_listified
     global known_contacts
+    expected_responses = 0
 
     for kc in known_contacts:
         if not send_proto_message("heartbeat\neot", kc):
             known_contacts.remove(kc) # does not wait for ident from dead nodes
+        else:
+            expected_responses += 1
+            send_proto_message("ident\n%s\neot" % self_host, kc)
 
-    for kc in known_contacts:
-        send_proto_message("ident\n%s\neot" % self_host, kc)
-
-    while len(all_nodes_listified.splitlines()) < (len(known_contacts)+1):
+    while len(all_nodes_listified.splitlines()) < expected_responses:
         pass
     print("Identification received from all nodes!")
 
