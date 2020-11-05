@@ -682,12 +682,7 @@ http_listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 http_listener.bind(http_addr)
 http_listener.listen()
 
-attempt_connection()
 
-if len(known_contacts) == 0:
-    itarget = input("Please input the address of a known node, or press enter if this is the first: ")
-    if itarget != "":
-        send_hello(itarget)
 
 t_http = threading.Thread(target=listen_http)
 t_http.daemon = True
@@ -704,6 +699,13 @@ print("Worker thread set up...")
 t_http.start()
 t_geoloc.start()
 t_worker.start()
+
+attempt_connection()
+
+if len(known_contacts) == 0:
+    itarget = input("Please input the address of a known node, or press enter if this is the first: ")
+    if itarget != "":
+        send_hello(itarget)
 
 while True:
     user_input = input()
