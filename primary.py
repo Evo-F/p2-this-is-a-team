@@ -436,11 +436,13 @@ def handle_proto_message(sock, client):
     # This is to prevent erroneous timeouts and re-sends.
 
     if new_contact:
+        print("Sending a contact message...")
         nodes = ""
         for kc in known_contacts:
             if kc != client[0]:
                 nodes += kc + "\n"
         send_proto_message("contact\n%seot" % nodes, client[0])
+        print("Sent!")
 
     if send_ident:
         send_ident_report(message_parts[1])
