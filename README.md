@@ -8,6 +8,7 @@ This system functions as a peer-to-peer "hive mind" network, with each node func
 and worker node as needed.
 
 Current Status: **COMPLETE (READY FOR GRADING)**  
+*(Please utilize latest commit ONLY. Disregard any previous commits labelled final.)*  
 US East Host: 34.86.197.125
 
 ### Description
