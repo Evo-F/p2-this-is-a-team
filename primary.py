@@ -69,13 +69,9 @@ def attempt_connection():
 
 def save_hosts():
     global known_contacts
-    with open("node_record.txt", "r") as f:
-        file_hosts = f.read().splitlines()
-        f.close()
-    with open("node_record.txt", "a") as f:
+    with open("node_record.txt", "w") as f:
         for kc in known_contacts:
-            if kc not in file_hosts:
-                f.write(kc + "\n")
+            f.write(kc + "\n")
         f.close()
 
 
@@ -380,6 +376,9 @@ def handle_proto_message(sock, client):
     process_result = False
     send_ident = False
     send_okay = True
+
+    if client[0] not in known_contacts:
+        known_contacts.append(client[0])
 
     print("Received new message from %s via port %d // message text follows:" % (client[0], client[1]))
     print("-----")
