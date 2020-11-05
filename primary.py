@@ -15,6 +15,7 @@ known_contacts = []
 all_nodes_listified = ""
 current_jobs = []
 gathered_results = {}
+self_host = cloud.gcp_get_my_external_ip()
 
 
 class HTTPRequest:
@@ -667,7 +668,7 @@ def listen_protocol():
         listener.close()
 
 
-self_host = cloud.gcp_get_my_external_ip()
+
 print("Currently hosting via: "+str(self_host))
 server_addr = ("", proto_port)
 http_addr = ("", http_port)
