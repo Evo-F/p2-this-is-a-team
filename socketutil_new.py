@@ -31,7 +31,7 @@ less than the full length of the data."""
 
 def send(self, data):
     if isinstance(data, str):
-        data = str.encode()
+        data = data.encode()
     return self.send(data)
 
 
