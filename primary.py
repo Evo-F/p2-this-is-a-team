@@ -63,7 +63,7 @@ def attempt_connection():
     for hn in hosts:
         if hn == self_host:
             pass
-        if send_hello(hn):
+        if send_hello(hn, True):
             print("Living contact found: %s" % hn)
             break
 
@@ -288,10 +288,14 @@ def process_job():
             current_jobs.remove(job)
 
 
-def send_hello(contact):
+def send_hello(contact, signon=False):
     global known_contacts
     global self_host
-    if send_proto_message("hello\neot", contact):
+    if signon:
+        message = "hello\nsignon\neot"
+    else:
+        message = "hello\neot"
+    if send_proto_message(message, contact):
         if contact not in known_contacts and contact != self_host:
             known_contacts.append(contact)
         save_hosts()
@@ -394,10 +398,12 @@ def handle_proto_message(sock, client):
 
     elif received_message.startswith("hello"):
         print("Heard a hello!")
+        if len(message_parts) > 1:
+            if message_parts[1].lower() == "signon":
+                new_contact = True
         if client[0] not in known_contacts and client[0] != self_host:
             print("This is somebody new!")
             known_contacts.append(client[0])
-            new_contact = True
         else:
             print("Client is %s, and I am %s" % (client[0], self_host))
             print(known_contacts)
@@ -713,7 +719,7 @@ attempt_connection()
 if len(known_contacts) == 0:
     itarget = input("Please input the address of a known node, or press enter if this is the first: ")
     if itarget != "":
-        send_hello(itarget)
+        send_hello(itarget, True)
 
 while True:
     user_input = input()
