@@ -327,7 +327,7 @@ def send_ident_report(contact):
 def send_proto_message(message, target):
     addr = (target, proto_port)
     try:
-        s = socket.create_connection(addr, timeout=1)
+        s = socket.create_connection(addr, timeout=2)
     except:
         print("[CONN] ERROR Attempted to open socket to target %s:%d, but it did not respond!" % (target, proto_port))
         return False
@@ -352,7 +352,7 @@ def request_ident():
     print("Requesting identification from all nodes...")
     global all_nodes_listified
     global known_contacts
-    expected_responses = 0
+    expected_responses = 1
 
     for kc in known_contacts:
         if not send_proto_message("heartbeat\neot", kc):
@@ -363,6 +363,7 @@ def request_ident():
             expected_responses += 1
             send_proto_message("ident\n%s\neot" % self_host, kc)
 
+    print("EXPECTING %d RESPONSES" % expected_responses)
     while len(all_nodes_listified.splitlines()) < expected_responses:
         pass
     print("Identification received from all nodes!")
@@ -456,14 +457,14 @@ def handle_proto_message(sock, client):
         global all_nodes_listified
         print("NEW IDENTITY REPORT: %s via %s // %s // %s" % (client[0], message_parts[1],
                                                               message_parts[2], message_parts[3]))
-        ident_report = "<tr>"
+        ident_report = "\n<tr>"
         ident_report += "<td>%s</td>" % message_parts[2]
         ident_report += "<td>%s</td>" % client[0]
         ident_report += "<td>%s</td>" % message_parts[1]
         ident_report += "<td>%s</td>" % message_parts[3]
         ident_report += "<td>%s</td>" % message_parts[4]
         ident_report += "<td>%s, %s</td>" % (message_parts[5], message_parts[6])
-        ident_report += "</tr>\n"
+        ident_report += "</tr>"
         all_nodes_listified += ident_report
 
     if process_result:
@@ -625,7 +626,7 @@ def serve_index():
     all_nodes_listified += "<td>%s</td>" % cloud.zone
     all_nodes_listified += "<td>%s</td>" % self_city
     all_nodes_listified += "<td>%s, %s</td>" % (cloud.coords[0], cloud.coords[1])
-    all_nodes_listified += "</tr>\n"
+    all_nodes_listified += "</tr>"
     request_ident()
     try:
         with open("web/form.html", "rb") as f:
