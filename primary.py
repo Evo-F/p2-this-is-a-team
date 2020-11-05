@@ -380,9 +380,6 @@ def handle_proto_message(sock, client):
     send_ident = False
     send_okay = True
 
-    if client[0] not in known_contacts:
-        known_contacts.append(client[0])
-
     print("Received new message from %s via port %d // message text follows:" % (client[0], client[1]))
     print("-----")
     for s in message_parts:
@@ -435,6 +432,9 @@ def handle_proto_message(sock, client):
     if send_okay:
         socketutil_new.sendall(sock, "okay\neot")
     sock.close()
+
+    if client[0] not in known_contacts:
+        known_contacts.append(client[0])
 
     # All below clauses are situational.
     # The node prioritizes acknowledgment before actually acting on the message it received.
