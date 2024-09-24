@@ -1,4 +1,5 @@
 # Geoloc (CSCI356 Project 2)
+*Final Grade: 100 / 80*
 
 Distributed website analyzer and geolocation service.
 
